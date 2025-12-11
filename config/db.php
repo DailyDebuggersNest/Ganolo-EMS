@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost'; // Adjust if needed
-$dbname = 'testems_database';
+$dbname = 'emsDB_23';
 $username = 'root'; // Your DB username
 $password = ''; // Your DB password
 

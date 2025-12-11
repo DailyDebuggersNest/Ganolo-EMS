@@ -1,6 +1,6 @@
 -- Create the database
-CREATE DATABASE IF NOT EXISTS testems_database;
-USE testems_database;
+CREATE DATABASE IF NOT EXISTS emsDB_23;
+USE emsDB_23;
 
 -- Students table
 CREATE TABLE students (
