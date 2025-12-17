@@ -2,45 +2,166 @@
 require '../config/db.php';
 $pageTitle = 'Enrollments';
 
-// Fetch enrollments with joins
-$stmt = $pdo->query("SELECT e.id, s.firstname, s.lastname, c.title, e.enrolled_at FROM enrollments e JOIN students s ON e.student_id = s.id JOIN courses c ON e.course_id = c.id ORDER BY e.enrolled_at DESC");
-$enrollments = $stmt->fetchAll();
+// --- HANDLE ADD ENROLLMENT (Server Side) ---
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
+    try {
+
+        $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, subject_id) VALUES (?, ?)");
+        $stmt->execute([$_POST['student_id'], $_POST['subject_id']]);
+        $successMsg = "Student enrolled successfully!";
+    } catch (PDOException $e) {
+        // Handle duplicate entry error (Student already enrolled in this subject)
+        if ($e->errorInfo[1] == 1062) {
+            $errorMsg = "Error: This student is already enrolled in this subject.";
+        } else {
+            $errorMsg = "Error: " . $e->getMessage();
+        }
+    }
+}
+
+// --- FETCH DATA ---
+$enrollments = $pdo->query("SELECT e.id, s.firstname, s.lastname, c.subject_code, c.description, e.enrolled_at 
+                            FROM enrollments e 
+                            JOIN students s ON e.student_id = s.id 
+                            JOIN curriculum c ON e.subject_id = c.id 
+                            ORDER BY e.enrolled_at DESC")->fetchAll();
+
+$students = $pdo->query("SELECT id, firstname, lastname FROM students ORDER BY lastname ASC")->fetchAll();
+
+// UPDATED: Fetch from 'curriculum' for the dropdown
+$subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum ORDER BY year_level, semester ASC")->fetchAll();
 ?>
 
 <?php include '../includes/sidebar.php'; ?>
-<div class="container">
-    <h1 class="mb-4">Enrollments</h1>
-    <a href="../actions/add_enrollment.php" class="btn btn-primary mb-3">Add Enrollment</a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Student</th>
-                <th>Course</th>
-                <th>Enrolled At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($enrollments as $enrollment): ?>
+
+<div class="container-fluid main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-secondary">Enrollments Management</h2>
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+            <i class="fas fa-plus me-2"></i>New Enrollment
+        </button>
+    </div>
+
+    <?php if (isset($successMsg)): ?>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => Swal.fire('Success', '<?php echo $successMsg; ?>', 'success'));
+        </script>
+    <?php endif; ?>
+    <?php if (isset($errorMsg)): ?>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => Swal.fire('Error', '<?php echo $errorMsg; ?>', 'error'));
+        </script>
+    <?php endif; ?>
+
+    <div class="card border-0 shadow-sm p-4">
+        <table id="enrollmentTable" class="table table-hover align-middle" style="width:100%">
+            <thead class="bg-light text-secondary">
                 <tr>
-                    <td><?php echo $enrollment['id']; ?></td>
-                    <td><?php echo htmlspecialchars($enrollment['firstname'] . ' ' . $enrollment['lastname']); ?></td>
-                    <td><?php echo htmlspecialchars($enrollment['title']); ?></td>
-                    <td><?php echo $enrollment['enrolled_at']; ?></td>
-                    <td>
-                        <a href="../actions/edit_enrollment.php?id=<?php echo $enrollment['id']; ?>" class="btn btn-warning btn-sm">Edit</a>
-                        <form method="POST" action="../actions/delete_enrollment.php" style="display:inline;">
-                            <input type="hidden" name="id" value="<?php echo $enrollment['id']; ?>">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                        </form>
-                    </td>
+                    <th>ID</th>
+                    <th>Student Name</th>
+                    <th>Subject</th>
+                    <th>Description</th>
+                    <th>Date Enrolled</th>
+                    <th class="text-center">Actions</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($enrollments as $row): ?>
+                    <tr>
+                        <td class="text-muted small font-monospace">
+                            #<?php echo str_pad($row['id'], 4, '0', STR_PAD_LEFT); ?>
+                        </td>
+                        <td class="fw-bold"><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary"><?php echo htmlspecialchars($row['subject_code']); ?></span></td>
+                        <td class="text-muted small"><?php echo htmlspecialchars($row['description']); ?></td>
+                        <td><?php echo date('M d, Y', strtotime($row['enrolled_at'])); ?></td>
+                        <td class="text-center">
+                            <form method="POST" action="../actions/delete_enrollment.php" class="d-inline delete-form">
+                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Enroll a Student</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="action" value="add">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Student</label>
+                        <select name="student_id" class="form-select" required>
+                            <option value="">Choose Student...</option>
+                            <?php foreach ($students as $s): ?>
+                                <option value="<?php echo $s['id']; ?>">
+                                    <?php echo htmlspecialchars($s['lastname'] . ', ' . $s['firstname']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Subject</label>
+                        <select name="subject_id" class="form-select" required>
+                            <option value="">Choose Subject...</option>
+                            <?php foreach ($subjects as $s): ?>
+                                <option value="<?php echo $s['id']; ?>">
+                                    <?php echo htmlspecialchars($s['subject_code'] . ' - ' . $s['description']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Enroll Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#enrollmentTable').DataTable({
+            "pageLength": 10,
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Filter enrollments..."
+            },
+            "dom": '<"d-flex justify-content-between mb-3"lf>t<"d-flex justify-content-between mt-3"ip>'
+        });
+
+        $('.delete-btn').click(function() {
+            var form = $(this).closest('form');
+            Swal.fire({
+                title: 'Unenroll Student?',
+                text: "This will remove the student from this subject.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, remove'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            })
+        });
+    });
+</script>
 </body>
+
 </html>

@@ -1,8 +1,8 @@
 <?php
-$host = 'localhost'; // Adjust if needed
-$dbname = 'emsDB_23';
-$username = 'root'; // Your DB username
-$password = ''; // Your DB password
+$host = 'localhost';
+$dbname = 'emsdb_23'; // Make sure this matches exactly what is in phpMyAdmin
+$username = 'root';
+$password = '';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);

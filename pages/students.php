@@ -2,49 +2,134 @@
 require '../config/db.php';
 $pageTitle = 'Students';
 
-// Fetch students
-$stmt = $pdo->query("SELECT * FROM students ORDER BY created_at DESC");
-$students = $stmt->fetchAll();
+// --- HANDLE ADD STUDENT ---
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
+    $lastname = $_POST['lastname'];
+    if (substr($lastname, -2) !== '23') { $lastname .= '23'; } // Auto-append 23
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO students (lastname, firstname, middlename, age, email, phone) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$lastname, $_POST['firstname'], $_POST['middlename'], $_POST['age'], $_POST['email'], $_POST['phone']]);
+        $successMsg = "Student added successfully!";
+    } catch (PDOException $e) {
+        $errorMsg = "Error: " . $e->getMessage();
+    }
+}
+
+$students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAll();
 ?>
 
 <?php include '../includes/sidebar.php'; ?>
-<div class="container">
-    <h1 class="mb-4">Students</h1>
-    <a href="../actions/add_student.php" class="btn btn-primary mb-3">Add Student</a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Date of Birth</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($students as $student): ?>
+
+<div class="container-fluid main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color: var(--dark-slate);">Student Directory</h2>
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+            <i class="fas fa-user-plus me-2"></i>Add Student
+        </button>
+    </div>
+
+    <?php if (isset($successMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire('Success', '<?php echo $successMsg; ?>', 'success'));</script><?php endif; ?>
+
+    <div class="card border-0 shadow-sm p-4">
+        <table id="studentsTable" class="table table-hover align-middle">
+            <thead>
                 <tr>
-                    <td><?php echo $student['id']; ?></td>
-                    <td><?php echo htmlspecialchars($student['firstname']); ?></td>
-                    <td><?php echo htmlspecialchars($student['lastname']); ?></td>
-                    <td><?php echo htmlspecialchars($student['email']); ?></td>
-                    <td><?php echo htmlspecialchars($student['phone']); ?></td>
-                    <td><?php echo $student['date_of_birth']; ?></td>
-                    <td>
-                        <a href="../actions/edit_student.php?id=<?php echo $student['id']; ?>" class="btn btn-warning btn-sm">Edit</a>
-                        <form method="POST" action="../actions/delete_student.php" style="display:inline;">
-                            <input type="hidden" name="id" value="<?php echo $student['id']; ?>">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Age</th>
+                    <th>ID No.</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($students as $s): ?>
+                <tr>
+                    <td class="fw-bold" style="color: var(--dark-slate);"><?php echo htmlspecialchars($s['lastname']); ?></td>
+                    <td><?php echo htmlspecialchars($s['firstname']); ?></td>
+                    <td><?php echo htmlspecialchars($s['middlename']); ?></td>
+                    <td><span class="badge badge-custom rounded-pill px-3"><?php echo $s['age']; ?></span></td>
+                    
+                    <td class="fw-bold font-monospace" style="color: var(--medium-blue);">
+                        <?php echo str_pad($s['id'], 4, '0', STR_PAD_LEFT); ?>
+                    </td>
+                    
+                    <td class="text-center">
+                        <a href="../actions/edit_student.php?id=<?php echo $s['id']; ?>" class="btn btn-sm btn-outline-secondary rounded-circle me-1"><i class="fas fa-pen"></i></a>
+                        <form method="POST" action="../actions/delete_student.php" class="d-inline delete-form">
+                            <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle delete-btn"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<div class="modal fade" id="addStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header text-white" style="background: var(--medium-blue);">
+                <h5 class="modal-title">Add New Student</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body p-4 bg-light">
+                    <input type="hidden" name="action" value="add">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="fw-bold small text-muted">Last Name</label>
+                            <input type="text" name="lastname" class="form-control" required placeholder="Ends with '23'">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="fw-bold small text-muted">First Name</label>
+                            <input type="text" name="firstname" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="fw-bold small text-muted">Middle Name</label>
+                            <input type="text" name="middlename" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="fw-bold small text-muted">Age</label>
+                            <input type="number" name="age" class="form-control" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="fw-bold small text-muted">Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="fw-bold small text-muted">Phone</label>
+                            <input type="text" name="phone" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary px-4">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#studentsTable').DataTable();
+        $('.delete-btn').click(function() {
+            var form = $(this).closest('form');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Confirm deletion of this student?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#213448',
+                confirmButtonText: 'Yes, delete'
+            }).then((result) => { if (result.isConfirmed) form.submit(); })
+        });
+    });
+</script>
 </body>
 </html>

@@ -7,9 +7,9 @@ $stmt = $pdo->prepare("SELECT * FROM enrollments WHERE id = ?");
 $stmt->execute([$id]);
 $enrollment = $stmt->fetch();
 
-// Fetch students and courses for dropdowns
+// Fetch students and curriculum for dropdowns
 $students = $pdo->query("SELECT id, firstname, lastname FROM students")->fetchAll();
-$courses = $pdo->query("SELECT id, title FROM courses")->fetchAll();
+$curriculum = $pdo->query("SELECT id, subject_code FROM curriculum")->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $student_id = $_POST['student_id'];
@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label>Course</label>
             <select name="course_id" class="form-control" required>
                 <option value="">Select Course</option>
-                <?php foreach ($courses as $course): ?>
-                    <option value="<?php echo $course['id']; ?>" <?php if ($course['id'] == $enrollment['course_id']) echo 'selected'; ?>><?php echo htmlspecialchars($course['title']); ?></option>
+                <?php foreach ($curriculum as $curriculum): ?>
+                    <option value="<?php echo $curriculum['id']; ?>" <?php if ($curriculum['id'] == $enrollment['course_id']) echo 'selected'; ?>><?php echo htmlspecialchars($curriculum['subject_code']); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
