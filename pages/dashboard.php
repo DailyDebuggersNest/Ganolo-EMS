@@ -2,20 +2,20 @@
 require '../config/db.php';
 $pageTitle = 'Dashboard';
 
-// --- UPDATED STATS LOGIC ---
+// --- STATS LOGIC ---
 $stats = [
     'students' => $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn(),
     'subjects' => $pdo->query("SELECT COUNT(*) FROM curriculum")->fetchColumn(),
+    'courses'  => $pdo->query("SELECT COUNT(*) FROM course")->fetchColumn(),
     'enrollments' => $pdo->query("SELECT COUNT(*) FROM enrollments")->fetchColumn()
 ];
 
-// --- UPDATED LATEST ENROLLMENT QUERY ---
-// Joins 'curriculum' and uses 'subject_id'
-$latest = $pdo->query("SELECT s.firstname, s.lastname, c.subject_code, c.description, e.enrolled_at 
-                       FROM enrollments e 
-                       JOIN students s ON e.student_id = s.id 
-                       JOIN curriculum c ON e.subject_id = c.id 
-                       ORDER BY e.enrolled_at DESC LIMIT 1")->fetch();
+// --- LATEST ACTIVITY (Fetch Last 5 Enrollments) ---
+$recent_activity = $pdo->query("SELECT s.firstname, s.lastname, c.subject_code, c.description, e.enrolled_at 
+                                FROM enrollments e 
+                                JOIN students s ON e.student_id = s.id 
+                                JOIN curriculum c ON e.subject_id = c.CurriculumID 
+                                ORDER BY e.enrolled_at DESC LIMIT 5")->fetchAll();
 ?>
 
 <?php include '../includes/sidebar.php'; ?>
@@ -23,8 +23,8 @@ $latest = $pdo->query("SELECT s.firstname, s.lastname, c.subject_code, c.descrip
 <div class="container-fluid main-content">
     <h2 class="mb-4 fw-bold text-secondary">Dashboard Overview</h2>
     
-    <div class="row g-4">
-        <div class="col-md-4">
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
             <div class="card p-3 border-start border-4 border-primary shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -38,7 +38,21 @@ $latest = $pdo->query("SELECT s.firstname, s.lastname, c.subject_code, c.descrip
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <div class="card p-3 border-start border-4 border-info shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase fw-bold small">Total Courses</p>
+                        <h2 class="fw-bold mb-0 text-info"><?php echo $stats['courses']; ?></h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info">
+                        <i class="fas fa-university fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
             <div class="card p-3 border-start border-4 border-success shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -52,11 +66,11 @@ $latest = $pdo->query("SELECT s.firstname, s.lastname, c.subject_code, c.descrip
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3 border-start border-4 border-warning shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="text-muted mb-1 text-uppercase fw-bold small">Total Enrollments</p>
+                        <p class="text-muted mb-1 text-uppercase fw-bold small">Enrollments</p>
                         <h2 class="fw-bold mb-0 text-warning"><?php echo $stats['enrollments']; ?></h2>
                     </div>
                     <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
@@ -67,42 +81,43 @@ $latest = $pdo->query("SELECT s.firstname, s.lastname, c.subject_code, c.descrip
         </div>
     </div>
 
-    <div class="row mt-5">
-        <div class="col-md-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 fw-bold text-secondary"><i class="fas fa-history me-2"></i>Latest Activity</h5>
-                </div>
-                <div class="card-body p-4">
-                    <?php if ($latest): ?>
-                        <div class="d-flex align-items-center">
-                            <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3 text-info">
-                                <i class="fas fa-bell fa-lg"></i>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-dark fs-5">
-                                    <?php echo htmlspecialchars($latest['firstname'] . ' ' . $latest['lastname']); ?>
+    <div class="card border-0 shadow-sm p-4">
+        <h5 class="fw-bold text-secondary mb-3">Recently Added Enrollments</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Subject</th>
+                        <th>Date Enrolled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($recent_activity) > 0): ?>
+                        <?php foreach ($recent_activity as $act): ?>
+                        <tr>
+                            <td class="fw-bold text-dark">
+                                <?php echo htmlspecialchars($act['firstname'] . ' ' . $act['lastname']); ?>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary">
+                                    <?php echo htmlspecialchars($act['subject_code']); ?>
                                 </span>
-                                <span class="text-muted">enrolled in</span>
-                                <span class="fw-bold text-primary">
-                                    <?php echo htmlspecialchars($latest['subject_code']); ?>
-                                </span>
-                                <span class="text-muted small">(<?php echo htmlspecialchars($latest['description']); ?>)</span>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="far fa-clock me-1"></i>
-                                    <?php echo date('F j, Y, g:i a', strtotime($latest['enrolled_at'])); ?>
-                                </small>
-                            </div>
-                        </div>
+                                <span class="text-muted small ms-2"><?php echo htmlspecialchars($act['description']); ?></span>
+                            </td>
+                            <td class="text-muted small">
+                                <i class="far fa-clock me-1"></i>
+                                <?php echo date('M d, Y h:i A', strtotime($act['enrolled_at'])); ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
                     <?php else: ?>
-                        <div class="text-center py-4 text-muted">
-                            <i class="fas fa-inbox fa-3x mb-3 text-light"></i>
-                            <p>No recent activity found.</p>
-                        </div>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">No recent activity found.</td>
+                        </tr>
                     <?php endif; ?>
-                </div>
-            </div>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

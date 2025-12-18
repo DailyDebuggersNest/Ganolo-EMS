@@ -1,9 +1,44 @@
--- RESET DATABASE
-
-CREATE DATABASE IF NOT EXISTS emsdb_23;
+-- 1. RESET DATABASE (Cleans up everything to start fresh)
+DROP DATABASE IF EXISTS emsdb_23;
+CREATE DATABASE emsdb_23;
 USE emsdb_23;
 
--- 1. NEW STUDENTS TABLE (Reordered as requested)
+-- 2. CREATE COURSE TABLE
+CREATE TABLE `course` (
+  `courseID` varchar(10) NOT NULL,       -- e.g. 'IT', 'HM'
+  `course_code` varchar(20) NOT NULL,    -- e.g. 'BSIT', 'BSCS'
+  `description` varchar(100) NOT NULL,   -- e.g. 'Bachelor of Science in...'
+  PRIMARY KEY (`courseID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- SEED COURSES
+INSERT INTO `course` (`courseID`, `course_code`, `description`) VALUES
+('IT', 'BSIT', 'Bachelor of Science in Information Technology'),
+('CS', 'BSCS', 'Bachelor of Science in Computer Science'),
+('HM', 'BSHM', 'Bachelor of Science in Hospitality Management'),
+('NUR', 'BSN', 'Bachelor of Science in Nursing');
+
+-- 3. CREATE CURRICULUM TABLE (With CurriculumID as Primary Key)
+CREATE TABLE `curriculum` (
+  `CurriculumID` int(11) NOT NULL AUTO_INCREMENT,
+  `courseID` varchar(10) DEFAULT NULL,   -- Link to Course
+  `subject_code` varchar(20) NOT NULL,
+  `description` text NOT NULL,
+  `year_level` int(11) NOT NULL,
+  `semester` varchar(20) NOT NULL,
+  `units` int(11) NOT NULL DEFAULT 3,
+  PRIMARY KEY (`CurriculumID`),
+  FOREIGN KEY (`courseID`) REFERENCES `course` (`courseID`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- SEED CURRICULUM
+INSERT INTO `curriculum` (`courseID`, `subject_code`, `description`, `year_level`, `semester`, `units`) VALUES
+('IT', 'IT101', 'Introduction to Computing', 1, '1st', 3),
+('IT', 'IT102', 'Computer Programming 1', 1, '1st', 3),
+('CS', 'CS101', 'Intro to Algorithms', 1, '1st', 3),
+('IT', 'IT201', 'Web Systems and Technologies', 2, '2nd', 3);
+
+-- 4. CREATE STUDENTS TABLE
 CREATE TABLE `students` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lastname` varchar(50) NOT NULL,
@@ -17,7 +52,7 @@ CREATE TABLE `students` (
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- SEED 20 STUDENTS (Lastname ends with 23)
+-- SEED STUDENTS
 INSERT INTO `students` (`lastname`, `firstname`, `middlename`, `age`, `email`, `phone`) VALUES
 ('Garcia23', 'Sophia', 'Marie', 20, 'sophia@gmail.com', '09123456789'),
 ('Reyes23', 'Daniel', 'James', 21, 'daniel@gmail.com', '09123456790'),
@@ -38,28 +73,10 @@ INSERT INTO `students` (`lastname`, `firstname`, `middlename`, `age`, `email`, `
 ('Diaz23', 'Ryan', 'Matthew', 22, 'ryan@gmail.com', '09123456805'),
 ('Castro23', 'Erica', 'Joy', 20, 'erica@gmail.com', '09123456806'),
 ('Aquino23', 'Francis', 'Jay', 21, 'francis@gmail.com', '09123456807'),
-('Navarro23', 'Bea', 'Patricia', 19, 'bea@gmail.com', '09123456808');
+('Navarro23', 'Bea', 'Patricia', 19, 'bea@gmail.com', '09123456808'),
+('Ezra23', 'Scarlet', 'Mil', 20, 'ezra@gmail.com', '09256233523');
 
--- 2. NEW CURRICULUM TABLE 
-CREATE TABLE `curriculum` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `subject_code` varchar(20) NOT NULL,
-  `description` text NOT NULL,
-  `year_level` int(11) NOT NULL,
-  `semester` varchar(20) NOT NULL,
-  `units` int(11) NOT NULL DEFAULT 3,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- SEED CURRICULUM DATA
-INSERT INTO `curriculum` (`subject_code`, `description`, `year_level`, `semester`, `units`) VALUES
-('IT101', 'Introduction to Computing', 1, '1st', 3),
-('IT102', 'Computer Programming 1', 1, '1st', 3),
-('IT103', 'Data Structures', 2, '1st', 3),
-('IT201', 'Web Systems and Technologies', 2, '2nd', 3),
-('IT202', 'Database Management Systems', 2, '2nd', 3);
-
--- 3. ENROLLMENTS (Updated to link to curriculum)
+-- 5. CREATE ENROLLMENTS TABLE
 CREATE TABLE `enrollments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `student_id` int(11) NOT NULL,
@@ -67,5 +84,9 @@ CREATE TABLE `enrollments` (
   `enrolled_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`subject_id`) REFERENCES `curriculum` (`id`) ON DELETE CASCADE
+  FOREIGN KEY (`subject_id`) REFERENCES `curriculum` (`CurriculumID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- OPTIONAL: Seed Enrollments
+INSERT INTO `enrollments` (`student_id`, `subject_id`) VALUES 
+(1, 1), (1, 2), (2, 1);

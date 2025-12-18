@@ -5,7 +5,7 @@ $pageTitle = 'Students';
 // --- HANDLE ADD STUDENT ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
     $lastname = $_POST['lastname'];
-    if (substr($lastname, -2) !== '23') { $lastname .= '23'; } // Auto-append 23
+    if (substr($lastname, -2) !== '23') { $lastname .= '23'; } 
 
     try {
         $stmt = $pdo->prepare("INSERT INTO students (lastname, firstname, middlename, age, email, phone) VALUES (?, ?, ?, ?, ?, ?)");
@@ -23,7 +23,7 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
 
 <div class="container-fluid main-content">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold" style="color: var(--dark-slate);">Student Directory</h2>
+        <h2 class="fw-bold text-secondary">Student Directory</h2>
         <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
             <i class="fas fa-user-plus me-2"></i>Add Student
         </button>
@@ -33,33 +33,33 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
 
     <div class="card border-0 shadow-sm p-4">
         <table id="studentsTable" class="table table-hover align-middle">
-            <thead>
+            <thead class="bg-light text-secondary">
                 <tr>
-                    <th>Last Name</th>
+                    <th>ID</th> <th>Last Name</th>
                     <th>First Name</th>
                     <th>Middle Name</th>
                     <th>Age</th>
-                    <th>ID No.</th>
-                    <th class="text-center">Actions</th>
+                    <th>Email</th> <th>Phone</th> <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($students as $s): ?>
                 <tr>
-                    <td class="fw-bold" style="color: var(--dark-slate);"><?php echo htmlspecialchars($s['lastname']); ?></td>
-                    <td><?php echo htmlspecialchars($s['firstname']); ?></td>
-                    <td><?php echo htmlspecialchars($s['middlename']); ?></td>
-                    <td><span class="badge badge-custom rounded-pill px-3"><?php echo $s['age']; ?></span></td>
-                    
-                    <td class="fw-bold font-monospace" style="color: var(--medium-blue);">
+                    <td class="font-monospace fw-bold text-secondary">
                         <?php echo str_pad($s['id'], 4, '0', STR_PAD_LEFT); ?>
                     </td>
+                    <td class="fw-bold text-primary"><?php echo htmlspecialchars($s['lastname']); ?></td>
+                    <td><?php echo htmlspecialchars($s['firstname']); ?></td>
+                    <td><?php echo htmlspecialchars($s['middlename']); ?></td>
+                    <td><?php echo $s['age']; ?></td>
+                    <td class="small text-muted"><?php echo htmlspecialchars($s['email']); ?></td>
+                    <td class="small text-muted"><?php echo htmlspecialchars($s['phone']); ?></td>
                     
                     <td class="text-center">
-                        <a href="../actions/edit_student.php?id=<?php echo $s['id']; ?>" class="btn btn-sm btn-outline-secondary rounded-circle me-1"><i class="fas fa-pen"></i></a>
+                        <a href="../actions/edit_student.php?id=<?php echo $s['id']; ?>" class="btn btn-warning btn-sm"><i class="fas fa-pen"></i></a>
                         <form method="POST" action="../actions/delete_student.php" class="d-inline delete-form">
                             <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
-                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle delete-btn"><i class="fas fa-trash"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>
@@ -72,7 +72,7 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
 <div class="modal fade" id="addStudentModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0">
-            <div class="modal-header text-white" style="background: var(--medium-blue);">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">Add New Student</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -118,16 +118,22 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
 <script>
     $(document).ready(function() {
         $('#studentsTable').DataTable();
-        $('.delete-btn').click(function() {
+
+        // FIXED: Use $(document).on('click', ...) so it works on ALL pages (1, 2, 3...)
+        $(document).on('click', '.delete-btn', function() {
             var form = $(this).closest('form');
             Swal.fire({
-                title: 'Are you sure?',
+                title: 'Delete Student?',
                 text: "Confirm deletion of this student?",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#213448',
+                confirmButtonColor: '#ef4444',
                 confirmButtonText: 'Yes, delete'
-            }).then((result) => { if (result.isConfirmed) form.submit(); })
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            })
         });
     });
 </script>

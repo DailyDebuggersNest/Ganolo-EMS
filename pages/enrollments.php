@@ -2,15 +2,12 @@
 require '../config/db.php';
 $pageTitle = 'Enrollments';
 
-// --- HANDLE ADD ENROLLMENT (Server Side) ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
     try {
-
         $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, subject_id) VALUES (?, ?)");
         $stmt->execute([$_POST['student_id'], $_POST['subject_id']]);
         $successMsg = "Student enrolled successfully!";
     } catch (PDOException $e) {
-        // Handle duplicate entry error (Student already enrolled in this subject)
         if ($e->errorInfo[1] == 1062) {
             $errorMsg = "Error: This student is already enrolled in this subject.";
         } else {
@@ -19,17 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// --- FETCH DATA ---
 $enrollments = $pdo->query("SELECT e.id, s.firstname, s.lastname, c.subject_code, c.description, e.enrolled_at 
                             FROM enrollments e 
                             JOIN students s ON e.student_id = s.id 
-                            JOIN curriculum c ON e.subject_id = c.id 
+                            JOIN curriculum c ON e.subject_id = c.CurriculumID 
                             ORDER BY e.enrolled_at DESC")->fetchAll();
 
 $students = $pdo->query("SELECT id, firstname, lastname FROM students ORDER BY lastname ASC")->fetchAll();
-
-// UPDATED: Fetch from 'curriculum' for the dropdown
-$subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum ORDER BY year_level, semester ASC")->fetchAll();
+$subjects = $pdo->query("SELECT CurriculumID, subject_code, description FROM curriculum ORDER BY year_level, semester ASC")->fetchAll();
 ?>
 
 <?php include '../includes/sidebar.php'; ?>
@@ -42,16 +36,8 @@ $subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum OR
         </button>
     </div>
 
-    <?php if (isset($successMsg)): ?>
-        <script>
-            document.addEventListener("DOMContentLoaded", () => Swal.fire('Success', '<?php echo $successMsg; ?>', 'success'));
-        </script>
-    <?php endif; ?>
-    <?php if (isset($errorMsg)): ?>
-        <script>
-            document.addEventListener("DOMContentLoaded", () => Swal.fire('Error', '<?php echo $errorMsg; ?>', 'error'));
-        </script>
-    <?php endif; ?>
+    <?php if (isset($successMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire('Success', '<?php echo $successMsg; ?>', 'success'));</script><?php endif; ?>
+    <?php if (isset($errorMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire('Error', '<?php echo $errorMsg; ?>', 'error'));</script><?php endif; ?>
 
     <div class="card border-0 shadow-sm p-4">
         <table id="enrollmentTable" class="table table-hover align-middle" style="width:100%">
@@ -69,7 +55,7 @@ $subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum OR
                 <?php foreach ($enrollments as $row): ?>
                     <tr>
                         <td class="text-muted small font-monospace">
-                            #<?php echo str_pad($row['id'], 4, '0', STR_PAD_LEFT); ?>
+                            <?php echo str_pad($row['id'], 4, '0', STR_PAD_LEFT); ?>
                         </td>
                         <td class="fw-bold"><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
                         <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary"><?php echo htmlspecialchars($row['subject_code']); ?></span></td>
@@ -100,7 +86,6 @@ $subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum OR
             <form method="POST">
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="add">
-
                     <div class="mb-3">
                         <label class="form-label fw-bold">Select Student</label>
                         <select name="student_id" class="form-select" required>
@@ -112,13 +97,12 @@ $subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum OR
                             <?php endforeach; ?>
                         </select>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label fw-bold">Select Subject</label>
                         <select name="subject_id" class="form-select" required>
                             <option value="">Choose Subject...</option>
                             <?php foreach ($subjects as $s): ?>
-                                <option value="<?php echo $s['id']; ?>">
+                                <option value="<?php echo $s['CurriculumID']; ?>">
                                     <?php echo htmlspecialchars($s['subject_code'] . ' - ' . $s['description']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -138,14 +122,12 @@ $subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum OR
     $(document).ready(function() {
         $('#enrollmentTable').DataTable({
             "pageLength": 10,
-            "language": {
-                "search": "",
-                "searchPlaceholder": "Filter enrollments..."
-            },
+            "language": { "search": "", "searchPlaceholder": "Filter enrollments..." },
             "dom": '<"d-flex justify-content-between mb-3"lf>t<"d-flex justify-content-between mt-3"ip>'
         });
 
-        $('.delete-btn').click(function() {
+        // FIXED: Event Delegation
+        $(document).on('click', '.delete-btn', function() {
             var form = $(this).closest('form');
             Swal.fire({
                 title: 'Unenroll Student?',
@@ -155,13 +137,10 @@ $subjects = $pdo->query("SELECT id, subject_code, description FROM curriculum OR
                 confirmButtonColor: '#d33',
                 confirmButtonText: 'Yes, remove'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
+                if (result.isConfirmed) { form.submit(); }
             })
         });
     });
 </script>
 </body>
-
 </html>

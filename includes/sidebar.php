@@ -15,7 +15,7 @@
             top: 0;
             left: 0;
             background: var(--sidebar-bg);
-            padding: 30px 15px; /* Added side padding for the "pill" look */
+            padding: 30px 15px; 
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1000;
             display: flex;
@@ -63,11 +63,11 @@
         .nav-link {
             display: flex;
             align-items: center;
-            color: #94a3b8; /* Muted Blue-Grey */
+            color: #94a3b8; 
             text-decoration: none;
             padding: 14px 20px;
             margin-bottom: 8px;
-            border-radius: 16px; /* Rounded Pill */
+            border-radius: 16px; 
             transition: all 0.3s ease;
             font-weight: 500;
             font-size: 1rem;
@@ -148,19 +148,20 @@
             <a href="/ice-ems/pages/dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
                 <i class="fas fa-chart-pie"></i><span>Dashboard</span>
             </a>
+            <a href="/ice-ems/pages/courses.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'courses.php' ? 'active' : ''; ?>">
+                <i class="fas fa-university"></i><span>Courses</span>
+            </a>
             <a href="/ice-ems/pages/students.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'students.php' ? 'active' : ''; ?>">
                 <i class="fas fa-user-astronaut"></i><span>Students</span>
             </a>
             <a href="/ice-ems/pages/curriculum.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'curriculum.php' ? 'active' : ''; ?>">
-                <i class="fas fa-layer-group"></i><span>Curriculum</span>
+                <i class="fas fa-book"></i><span>Curriculum</span>
             </a>
             <a href="/ice-ems/pages/enrollments.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'enrollments.php' ? 'active' : ''; ?>">
                 <i class="fas fa-clipboard-check"></i><span>Enrollments</span>
             </a>
         </div>
-    </div>
-
-    <div class="content" id="content">
+    </div> <div class="content" id="content">
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>

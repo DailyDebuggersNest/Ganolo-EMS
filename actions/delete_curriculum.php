@@ -3,7 +3,7 @@ require '../config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id = $_POST['id'];
-    $stmt = $pdo->prepare("DELETE FROM curriculum WHERE id = ?");
+    $stmt = $pdo->prepare("DELETE FROM curriculum WHERE CurriculumID = ?");
     $stmt->execute([$id]);
 }
 
