@@ -7,24 +7,24 @@
     <?php include 'header_styles.php'; ?>
     
     <style>
-        /* --- NEW SIDEBAR DESIGN --- */
+        /* --- REFACTORED SIDEBAR (Collapsed by Default) --- */
         .sidebar {
-            width: 280px;
+            width: 90px; /* Collapsed by default */
             height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
             background: var(--sidebar-bg);
-            padding: 30px 15px; 
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            padding: 30px 10px; 
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1000;
             display: flex;
             flex-direction: column;
         }
         
-        .sidebar.collapsed { 
-            width: 90px; 
-            padding: 30px 10px;
+        .sidebar.expanded { 
+            width: 280px; 
+            padding: 30px 15px;
         }
 
         /* Brand Area */
@@ -47,6 +47,7 @@
             justify-content: center;
             font-size: 1.2rem;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            flex-shrink: 0;
         }
         
         .brand-text {
@@ -55,40 +56,56 @@
             margin-left: 15px;
             letter-spacing: -1px;
             white-space: nowrap;
+            display: none; /* Hidden by default */
         }
         
-        .sidebar.collapsed .brand-text { display: none; }
+        .sidebar.expanded .brand-text { display: block; }
 
-        /* Menu Links - "Pill Style" */
+        /* Menu Links */
         .nav-link {
             display: flex;
             align-items: center;
+            justify-content: center; /* Centered by default */
             color: #94a3b8; 
             text-decoration: none;
-            padding: 14px 20px;
+            padding: 14px 0;
             margin-bottom: 8px;
             border-radius: 16px; 
             transition: all 0.3s ease;
             font-weight: 500;
             font-size: 1rem;
+            white-space: nowrap;
+        }
+        .sidebar.expanded .nav-link {
+            justify-content: flex-start;
+            padding: 14px 20px;
         }
 
         .nav-link i {
             width: 25px;
             font-size: 1.2rem;
-            margin-right: 15px;
             text-align: center;
             transition: margin 0.3s;
+            margin-right: 0; /* No margin by default */
+        }
+        .sidebar.expanded .nav-link i {
+            margin-right: 15px;
         }
 
+        .nav-link span { display: none; } /* Hidden by default */
+        .sidebar.expanded .nav-link span { display: inline; }
+
         /* Hover State */
-        .nav-link:hover {
+        .sidebar.expanded .nav-link:hover {
             color: white;
             background-color: rgba(255, 255, 255, 0.05);
             transform: translateX(5px);
         }
+        .sidebar:not(.expanded) .nav-link:hover {
+             color: white;
+        }
 
-        /* Active State (The Blue Pill) */
+        /* Active State */
         .nav-link.active {
             background: var(--accent);
             color: white;
@@ -96,22 +113,14 @@
             font-weight: 600;
         }
 
-        /* Collapsed Adjustments */
-        .sidebar.collapsed .nav-link {
-            justify-content: center;
-            padding: 14px 0;
-        }
-        .sidebar.collapsed .nav-link span { display: none; }
-        .sidebar.collapsed .nav-link i { margin-right: 0; }
-
         /* Content Area */
         .content {
-            margin-left: 280px;
+            margin-left: 90px; /* Collapsed margin by default */
             padding: 40px;
             transition: margin-left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             min-height: 100vh;
         }
-        .content.collapsed { margin-left: 90px; }
+        .content.expanded { margin-left: 280px; }
 
         /* Toggle Button */
         #toggleBtn {
@@ -129,7 +138,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         #toggleBtn:hover { transform: scale(1.1); color: var(--accent); }
     </style>
@@ -137,7 +146,7 @@
 <body>
 
     <div class="sidebar" id="sidebar">
-        <button id="toggleBtn"><i class="fas fa-chevron-left"></i></button>
+        <button id="toggleBtn"><i class="fas fa-chevron-right"></i></button>
 
         <div class="brand-box">
             <div class="brand-logo"><i class="fas fa-cube"></i></div>
@@ -169,22 +178,48 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         
         <script>
-            // Smooth Toggle Logic
-            const sidebar = document.getElementById('sidebar');
-            const content = document.getElementById('content');
-            const toggleBtn = document.getElementById('toggleBtn');
-            const icon = toggleBtn.querySelector('i');
+            // Definitive flicker-free sidebar script
+            (function() {
+                const sidebar = document.getElementById('sidebar');
+                const content = document.getElementById('content');
+                const toggleBtn = document.getElementById('toggleBtn');
+                const icon = toggleBtn.querySelector('i');
 
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                content.classList.toggle('collapsed');
-                
-                if (sidebar.classList.contains('collapsed')) {
-                    icon.classList.remove('fa-chevron-left');
-                    icon.classList.add('fa-chevron-right');
-                } else {
-                    icon.classList.remove('fa-chevron-right');
-                    icon.classList.add('fa-chevron-left');
-                }
-            });
+                // 1. Temporarily disable transitions to prevent any flash
+                sidebar.style.transition = 'none';
+                content.style.transition = 'none';
+
+                // 2. Define the function that applies the visual state
+                const applyState = (isExpanded) => {
+                    if (isExpanded) {
+                        sidebar.classList.add('expanded');
+                        content.classList.add('expanded');
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-left');
+                    } else {
+                        sidebar.classList.remove('expanded');
+                        content.classList.remove('expanded');
+                        icon.classList.remove('fa-chevron-left');
+                        icon.classList.add('fa-chevron-right');
+                    }
+                };
+
+                // 3. Apply the saved state immediately
+                const isExpanded = localStorage.getItem('sidebarExpanded') === 'true';
+                applyState(isExpanded);
+
+                // 4. Re-enable transitions after the browser has painted the initial state
+                // Using setTimeout ensures this runs after the current execution stack is clear.
+                setTimeout(() => {
+                    sidebar.style.transition = '';
+                    content.style.transition = '';
+                });
+
+                // 5. Attach the click listener for user interactions
+                toggleBtn.addEventListener('click', () => {
+                    const isNowExpanded = !sidebar.classList.contains('expanded');
+                    applyState(isNowExpanded);
+                    localStorage.setItem('sidebarExpanded', isNowExpanded);
+                });
+            })();
         </script>
