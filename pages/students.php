@@ -89,9 +89,10 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
                     <td class="small text-muted"><?php echo htmlspecialchars($s['phone']); ?></td>
                     
                     <td class="text-center">
-                        <button type="button" class="btn btn-info btn-sm view-history-btn" data-id="<?php echo $s['id']; ?>" data-name="<?php echo htmlspecialchars($s['firstname'] . ' ' . $s['lastname']); ?>">
-                            <i class="fas fa-history"></i>
-                        </button>
+                        <!-- PROFILE / HISTORY BUTTON -->
+                        <a href="student_profile.php?id=<?php echo $s['id']; ?>" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
                         
                         <!-- EDIT BUTTON -->
                         <button type="button" class="btn btn-warning btn-sm edit-btn"
@@ -178,19 +179,6 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
     </div>
 </div>
 
-<!-- HISTORY MODAL -->
-<div class="modal fade" id="historyModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="historyModalTitle">Enrollment History</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body"><p>Loading...</p></div>
-        </div>
-    </div>
-</div>
-
 <script>
     $(document).ready(function() {
         $('#studentsTable').DataTable({
@@ -216,30 +204,6 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
             $('#edit_age').val($(this).data('age'));
             $('#edit_email').val($(this).data('email'));
             $('#edit_phone').val($(this).data('phone'));
-        });
-
-        // HANDLE HISTORY (Existing Logic)
-        $(document).on('click', '.view-history-btn', function() {
-            var studentId = $(this).data('id');
-            var studentName = $(this).data('name');
-            $('#historyModalTitle').text('History: ' + studentName);
-            $('#historyModal .modal-body').html('<p>Loading...</p>');
-            $('#historyModal').modal('show');
-            $.ajax({
-                url: '../actions/get_student_history.php', type: 'GET', data: { id: studentId }, dataType: 'json',
-                success: function(response) {
-                    var content = '<p class="text-muted">No history found.</p>';
-                    if (response.length > 0) {
-                        content = '<table class="table table-sm"><thead><tr><th>Subject</th><th>Description</th><th>Date</th></tr></thead><tbody>';
-                        response.forEach(function(item) {
-                            content += '<tr><td>' + item.subject_code + '</td><td>' + item.description + '</td><td>' + new Date(item.enrolled_at).toLocaleDateString() + '</td></tr>';
-                        });
-                        content += '</tbody></table>';
-                    }
-                    $('#historyModal .modal-body').html(content);
-                },
-                error: function() { $('#historyModal .modal-body').html('<p class="text-danger">Error loading history.</p>'); }
-            });
         });
     });
 </script>

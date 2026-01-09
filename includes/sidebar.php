@@ -122,25 +122,30 @@
         }
         .content.expanded { margin-left: 280px; }
 
-        /* Toggle Button */
+        /* Toggle Button - Minimalist & Integrated */
         #toggleBtn {
             position: absolute;
-            top: 35px;
-            right: -20px;
-            width: 40px;
-            height: 40px;
-            background: white;
-            color: var(--sidebar-bg);
+            top: 25px;
+            right: -15px; /* Half hanging out */
+            width: 30px;
+            height: 30px;
+            background: var(--sidebar-bg); /* Match sidebar */
+            color: #94a3b8; /* Muted text */
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 50%;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.2s, right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.2s ease;
+            z-index: 1001;
+            font-size: 0.8rem;
         }
-        #toggleBtn:hover { transform: scale(1.1); color: var(--accent); }
+        #toggleBtn:hover {
+            color: white;
+            border-color: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -154,28 +159,24 @@
         </div>
         
         <div class="nav flex-column">
-            <a href="/ice-ems/pages/dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
+            <a href="dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
                 <i class="fas fa-chart-pie"></i><span>Dashboard</span>
             </a>
-            <a href="/ice-ems/pages/courses.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'courses.php' ? 'active' : ''; ?>">
+            <a href="courses.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'courses.php' ? 'active' : ''; ?>">
                 <i class="fas fa-university"></i><span>Courses</span>
             </a>
-            <a href="/ice-ems/pages/students.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'students.php' ? 'active' : ''; ?>">
+            <a href="students.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'students.php' ? 'active' : ''; ?>">
                 <i class="fas fa-user-astronaut"></i><span>Students</span>
             </a>
-            <a href="/ice-ems/pages/curriculum.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'curriculum.php' ? 'active' : ''; ?>">
+            <a href="curriculum.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'curriculum.php' ? 'active' : ''; ?>">
                 <i class="fas fa-book"></i><span>Curriculum</span>
             </a>
-            <a href="/ice-ems/pages/enrollments.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'enrollments.php' ? 'active' : ''; ?>">
+            <a href="enrollments.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'enrollments.php' ? 'active' : ''; ?>">
                 <i class="fas fa-clipboard-check"></i><span>Enrollments</span>
             </a>
         </div>
     </div> <div class="content" id="content">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <?php include '../includes/scripts.php'; ?>
         
         <script>
             // Definitive flicker-free sidebar script
