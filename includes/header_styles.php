@@ -16,7 +16,7 @@
         
         /* Text */
         --text-dark: #1e293b;     /* Slate 900 */
-        --text-muted: #94a3b8;    /* Slate 400 */
+        --text-muted: #64748b;    /* Slate 500 (Darker for better readability) */
         
         /* Functional Colors (Softened) */
         --success: #10b981;       /* Emerald */
@@ -33,70 +33,79 @@
         background-color: var(--app-bg);
         color: var(--text-dark);
         overflow-x: hidden;
+        font-size: 16px; /* Base size increase */
         -webkit-font-smoothing: antialiased; /* Crisper text */
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 700 !important;
+        letter-spacing: -0.02em;
     }
 
     /* --- SOFT CARDS --- */
     .card {
         background: var(--card-bg);
-        border: 1px solid #f1f5f9; /* Very subtle border */
+        border: 1px solid #e2e8f0; /* Slightly stronger border */
         border-radius: var(--radius-lg);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02); /* Ultra soft shadow */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
     }
 
-    /* --- REFINED TABLES --- */
+    /* --- REFINED TABLES (Larger) --- */
     .table thead th {
         background-color: transparent;
         color: var(--text-muted);
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: 0.85rem; /* Increased from 0.75rem */
         letter-spacing: 0.05em;
-        padding: 20px 16px;
-        border-bottom: 2px solid #f1f5f9;
+        padding: 16px 20px;
+        border-bottom: 2px solid #e2e8f0;
     }
 
     .table tbody td {
-        padding: 16px;
+        padding: 16px 20px;
         vertical-align: middle;
         color: var(--text-dark);
-        border-bottom: 1px solid #f8fafc;
-        font-size: 0.95rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 1rem; /* Standard readable size */
+        font-weight: 500;
     }
 
     .table-hover tbody tr:hover td {
-        background-color: #f8fafc; /* Very subtle hover tint */
+        background-color: #f1f5f9;
     }
 
-    /* --- CALM INPUTS --- */
+    /* --- CALM INPUTS (Larger) --- */
     .form-control, .form-select {
         background-color: #ffffff;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1; /* Darker border for visibility */
         border-radius: var(--radius-md);
-        padding: 12px 16px;
+        padding: 12px 18px;
+        font-size: 1rem;
         color: var(--text-dark);
         transition: all 0.2s;
     }
 
     .form-control:focus, .form-select:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1); /* Soft Slate Glow */
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(71, 85, 105, 0.1);
     }
 
-    /* --- PROFESSIONAL BUTTONS --- */
+    /* --- PROFESSIONAL BUTTONS (Larger) --- */
     .btn {
-        padding: 10px 20px;
+        padding: 10px 24px;
         border-radius: var(--radius-md);
-        font-weight: 500;
+        font-weight: 600;
         letter-spacing: 0.02em;
         border: none;
         transition: all 0.2s;
+        font-size: 0.95rem;
     }
 
     /* Primary - Slate */
@@ -107,13 +116,14 @@
     .btn-primary:hover {
         background-color: var(--primary-hover);
         transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     /* Warning - Amber (Edit) */
     .btn-warning {
-        background-color: white;
-        color: var(--warning);
-        border: 1px solid #e2e8f0;
+        background-color: #fffbeb; /* Light Amber tint */
+        color: #b45309;
+        border: 1px solid #fcd34d;
     }
     .btn-warning:hover {
         background-color: var(--warning);
@@ -123,9 +133,9 @@
 
     /* Danger - Rose (Delete) */
     .btn-danger {
-        background-color: white;
-        color: var(--danger);
-        border: 1px solid #e2e8f0;
+        background-color: #fef2f2; /* Light Rose tint */
+        color: #b91c1c;
+        border: 1px solid #fecaca;
     }
     .btn-danger:hover {
         background-color: var(--danger);
@@ -135,9 +145,9 @@
 
     /* Info - Sky (View/Profile) */
     .btn-info {
-        background-color: white;
-        color: var(--info);
-        border: 1px solid #e2e8f0;
+        background-color: #f0f9ff; /* Light Sky tint */
+        color: #0369a1;
+        border: 1px solid #bae6fd;
     }
     .btn-info:hover {
         background-color: var(--info);
@@ -145,28 +155,36 @@
         border-color: var(--info);
     }
 
-    /* Rounded Icon Buttons (Table Actions) */
+    /* Rounded Icon Buttons (Table Actions) - Larger */
     .table .btn {
-        width: 32px;
-        height: 32px;
+        width: 38px;
+        height: 38px;
         padding: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
-        margin: 0 2px;
+        border-radius: 10px;
+        margin: 0 4px;
+        font-size: 1rem;
     }
 
-    /* --- BADGES (Subtle) --- */
+    /* --- BADGES (Subtle & Larger) --- */
     .badge {
-        font-weight: 500;
-        padding: 6px 10px;
-        border-radius: 6px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border-radius: 8px;
         border: none !important;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
     }
     .badge.bg-primary { background-color: #e2e8f0 !important; color: var(--primary) !important; }
-    .badge.bg-success { background-color: #dcfce7 !important; color: var(--success) !important; }
-    .badge.bg-warning { background-color: #fef3c7 !important; color: #b45309 !important; }
-    .badge.bg-info    { background-color: #e0f2fe !important; color: var(--info) !important; }
+    .badge.bg-success { background-color: #dcfce7 !important; color: #166534 !important; }
+    .badge.bg-warning { background-color: #fef3c7 !important; color: #92400e !important; }
+    .badge.bg-info    { background-color: #e0f2fe !important; color: #075985 !important; }
     
+    /* --- CUSTOM SCROLLBAR --- */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>

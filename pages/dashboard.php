@@ -10,12 +10,14 @@ $stats = [
     'enrollments' => $pdo->query("SELECT COUNT(*) FROM enrollments")->fetchColumn()
 ];
 
-// --- LATEST ACTIVITY (Fetch Last 5 Enrollments) ---
-$recent_activity = $pdo->query("SELECT s.firstname, s.lastname, c.subject_code, c.description, e.enrolled_at 
-                                FROM enrollments e 
-                                JOIN students s ON e.student_id = s.id 
-                                JOIN curriculum c ON e.subject_id = c.CurriculumID 
-                                ORDER BY e.enrolled_at DESC LIMIT 5")->fetchAll();
+// --- LATEST ACTIVITY ---
+$recent_activity = $pdo->query("
+    SELECT s.firstname, s.lastname, c.subject_code, c.description, e.enrolled_at 
+    FROM enrollments e 
+    JOIN students s ON e.student_id = s.id 
+    JOIN curriculum c ON e.subject_id = c.CurriculumID 
+    ORDER BY e.enrolled_at DESC LIMIT 5
+")->fetchAll();
 ?>
 
 <?php include '../includes/sidebar.php'; ?>

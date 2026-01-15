@@ -4,8 +4,6 @@ $pageTitle = 'Curriculum';
 
 // --- HANDLE ACTIONS ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    
-    // 1. ADD SUBJECT
     if (isset($_POST['action']) && $_POST['action'] == 'add') {
         try {
             $stmt = $pdo->prepare("INSERT INTO curriculum (courseID, subject_code, description, year_level, semester, units) VALUES (?, ?, ?, ?, ?, ?)");
@@ -13,8 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $successMsg = "Subject added successfully!";
         } catch (PDOException $e) { $errorMsg = "Error: " . $e->getMessage(); }
     }
-
-    // 2. EDIT SUBJECT
     elseif (isset($_POST['action']) && $_POST['action'] == 'edit') {
         try {
             $stmt = $pdo->prepare("UPDATE curriculum SET courseID=?, subject_code=?, description=?, year_level=?, semester=?, units=? WHERE CurriculumID=?");
@@ -22,8 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $successMsg = "Subject updated successfully!";
         } catch (PDOException $e) { $errorMsg = "Error: " . $e->getMessage(); }
     }
-
-    // 3. DELETE SUBJECT
     elseif (isset($_POST['action']) && $_POST['action'] == 'delete') {
         try {
             $stmt = $pdo->prepare("DELETE FROM curriculum WHERE CurriculumID = ?");
@@ -33,9 +27,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Fetch Data
-$subjects = $pdo->query("SELECT cur.*, c.course_code FROM curriculum cur LEFT JOIN course c ON cur.courseID = c.courseID ORDER BY c.courseID, cur.year_level, cur.semester ASC")->fetchAll();
-$courses = $pdo->query("SELECT * FROM course")->fetchAll();
+// --- FETCH COURSES FOR DROPDOWN ---
+$courses = $pdo->query("SELECT * FROM course ORDER BY courseID ASC")->fetchAll();
+
+// --- FILTER LOGIC ---
+$selectedCourse = $_GET['courseID'] ?? '';
+$selectedYear = $_GET['year_level'] ?? '';
+$selectedSem = $_GET['semester'] ?? '';
+
+$sql = "SELECT cur.*, c.course_code FROM curriculum cur LEFT JOIN course c ON cur.courseID = c.courseID WHERE 1=1";
+$params = [];
+
+if (!empty($selectedCourse)) {
+    $sql .= " AND cur.courseID = ?";
+    $params[] = $selectedCourse;
+}
+if (!empty($selectedYear)) {
+    $sql .= " AND cur.year_level = ?";
+    $params[] = $selectedYear;
+}
+if (!empty($selectedSem)) {
+    $sql .= " AND cur.semester = ?";
+    $params[] = $selectedSem;
+}
+
+$sql .= " ORDER BY cur.year_level, cur.semester, cur.subject_code ASC";
+
+try {
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $subjects = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $errorMsg = "Error fetching data: " . $e->getMessage();
+}
 ?>
 
 <?php include '../includes/sidebar.php'; ?>
@@ -51,44 +75,89 @@ $courses = $pdo->query("SELECT * FROM course")->fetchAll();
     <?php if (isset($successMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire('Success', '<?php echo $successMsg; ?>', 'success'));</script><?php endif; ?>
     <?php if (isset($errorMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire('Error', '<?php echo $errorMsg; ?>', 'error'));</script><?php endif; ?>
 
+    <!-- FILTER CARD -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body bg-light rounded">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">Course</label>
+                    <select name="courseID" class="form-select">
+                        <option value="">All Courses</option>
+                        <?php foreach($courses as $c): ?>
+                            <option value="<?php echo $c['courseID']; ?>" <?php echo ($selectedCourse == $c['courseID']) ? 'selected' : ''; ?>>
+                                <?php echo $c['course_code']; ?> - <?php echo $c['description']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">Year Level</label>
+                    <select name="year_level" class="form-select">
+                        <option value="">All Years</option>
+                        <option value="1" <?php echo ($selectedYear == '1') ? 'selected' : ''; ?>>1st Year</option>
+                        <option value="2" <?php echo ($selectedYear == '2') ? 'selected' : ''; ?>>2nd Year</option>
+                        <option value="3" <?php echo ($selectedYear == '3') ? 'selected' : ''; ?>>3rd Year</option>
+                        <option value="4" <?php echo ($selectedYear == '4') ? 'selected' : ''; ?>>4th Year</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">Semester</label>
+                    <select name="semester" class="form-select">
+                        <option value="">All Semesters</option>
+                        <option value="1st" <?php echo ($selectedSem == '1st') ? 'selected' : ''; ?>>1st Sem</option>
+                        <option value="2nd" <?php echo ($selectedSem == '2nd') ? 'selected' : ''; ?>>2nd Sem</option>
+                        <option value="Summer" <?php echo ($selectedSem == 'Summer') ? 'selected' : ''; ?>>Summer</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" name="filter" value="1" class="btn btn-secondary w-100">
+                        <i class="fas fa-filter me-2"></i>Apply Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm p-4">
         <table id="curriculumTable" class="table table-hover align-middle">
             <thead class="bg-light text-secondary">
                 <tr>
-                    <th>Curriculum_ID</th> <th>Course</th> <th>Subject Code</th> <th>Description</th>
-                    <th>Year Level</th> <th>Semester</th> <th>Units</th> <th class="text-center">Actions</th>
+                    <th>CurrID</th> <th>Course</th> <th>SUBJECT</th> <th>Description</th>
+                    <th>Year</th> <th>Sem</th> <th>Units</th> <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($subjects as $s): ?>
-                <tr>
-                    <td class="font-monospace text-muted small"><?php echo str_pad($s['CurriculumID'], 4, '0', STR_PAD_LEFT); ?></td>
-                    <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($s['course_code'] ?? 'N/A'); ?></span></td>
-                    <td class="fw-bold text-primary"><?php echo htmlspecialchars($s['subject_code']); ?></td>
-                    <td><?php echo htmlspecialchars($s['description']); ?></td>
-                    <td><?php echo $s['year_level']; ?></td>
-                    <td><?php echo $s['semester']; ?></td>
-                    <td><?php echo $s['units']; ?></td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-warning btn-sm edit-btn"
-                                data-id="<?php echo $s['CurriculumID']; ?>"
-                                data-courseid="<?php echo $s['courseID']; ?>"
-                                data-code="<?php echo htmlspecialchars($s['subject_code']); ?>"
-                                data-desc="<?php echo htmlspecialchars($s['description']); ?>"
-                                data-year="<?php echo $s['year_level']; ?>"
-                                data-sem="<?php echo $s['semester']; ?>"
-                                data-units="<?php echo $s['units']; ?>"
-                                data-bs-toggle="modal" data-bs-target="#editSubjectModal">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                        <form method="POST" class="d-inline delete-form">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<?php echo $s['CurriculumID']; ?>">
-                            <button type="button" class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
+                <?php if (count($subjects) > 0): ?>
+                    <?php foreach ($subjects as $s): ?>
+                    <tr>
+                        <td class="font-monospace text-muted small"><?php echo str_pad($s['CurriculumID'], 4, '0', STR_PAD_LEFT); ?></td>
+                        <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($s['course_code'] ?? 'N/A'); ?></span></td>
+                        <td class="fw-bold text-primary"><?php echo htmlspecialchars($s['subject_code']); ?></td>
+                        <td><?php echo htmlspecialchars($s['description']); ?></td>
+                        <td><?php echo $s['year_level']; ?></td>
+                        <td><?php echo $s['semester']; ?></td>
+                        <td><?php echo $s['units']; ?></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-warning btn-sm edit-btn"
+                                    data-id="<?php echo $s['CurriculumID']; ?>"
+                                    data-courseid="<?php echo $s['courseID']; ?>"
+                                    data-code="<?php echo htmlspecialchars($s['subject_code']); ?>"
+                                    data-desc="<?php echo htmlspecialchars($s['description']); ?>"
+                                    data-year="<?php echo $s['year_level']; ?>"
+                                    data-sem="<?php echo $s['semester']; ?>"
+                                    data-units="<?php echo $s['units']; ?>"
+                                    data-bs-toggle="modal" data-bs-target="#editSubjectModal">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <form method="POST" class="d-inline delete-form">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="id" value="<?php echo $s['CurriculumID']; ?>">
+                                <button type="button" class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
@@ -114,7 +183,7 @@ $courses = $pdo->query("SELECT * FROM course")->fetchAll();
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-3"><label class="fw-bold small">Code</label><input type="text" name="subject_code" class="form-control" required></div>
+                    <div class="mb-3"><label class="fw-bold small">Subject Code</label><input type="text" name="subject_code" class="form-control" placeholder="e.g. IT 101" required></div>
                     <div class="mb-3"><label class="fw-bold small">Description</label><input type="text" name="description" class="form-control" required></div>
                     <div class="row">
                         <div class="col-4"><label class="fw-bold small">Year</label><input type="number" name="year_level" class="form-control" min="1" max="4" required></div>
@@ -155,7 +224,7 @@ $courses = $pdo->query("SELECT * FROM course")->fetchAll();
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-3"><label class="fw-bold small">Code</label><input type="text" name="subject_code" id="edit_code" class="form-control" required></div>
+                    <div class="mb-3"><label class="fw-bold small">Subject Code</label><input type="text" name="subject_code" id="edit_code" class="form-control" required></div>
                     <div class="mb-3"><label class="fw-bold small">Description</label><input type="text" name="description" id="edit_desc" class="form-control" required></div>
                     <div class="row">
                         <div class="col-4"><label class="fw-bold small">Year</label><input type="number" name="year_level" id="edit_year" class="form-control" min="1" max="4" required></div>

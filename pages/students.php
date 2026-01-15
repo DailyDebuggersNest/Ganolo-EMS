@@ -7,12 +7,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // 1. ADD STUDENT
     if (isset($_POST['action']) && $_POST['action'] == 'add') {
-        $lastname = $_POST['lastname'];
-        if (substr($lastname, -2) !== '23') { $lastname .= '23'; } 
-
         try {
-            $stmt = $pdo->prepare("INSERT INTO students (lastname, firstname, middlename, age, email, phone) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$lastname, $_POST['firstname'], $_POST['middlename'], $_POST['age'], $_POST['email'], $_POST['phone']]);
+            $stmt = $pdo->prepare("INSERT INTO students (lastname, firstname, middlename, age) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$_POST['lastname'], $_POST['firstname'], $_POST['middlename'], $_POST['age']]);
             $successMsg = "Student added successfully!";
         } catch (PDOException $e) {
             $errorMsg = "Error: " . $e->getMessage();
@@ -21,18 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // 2. EDIT STUDENT
     elseif (isset($_POST['action']) && $_POST['action'] == 'edit') {
-        $lastname = $_POST['lastname'];
-        if (substr($lastname, -2) !== '23') { $lastname .= '23'; }
-
         try {
-            $stmt = $pdo->prepare("UPDATE students SET lastname=?, firstname=?, middlename=?, age=?, email=?, phone=? WHERE id=?");
+            $stmt = $pdo->prepare("UPDATE students SET lastname=?, firstname=?, middlename=?, age=? WHERE id=?");
             $stmt->execute([
-                $lastname, 
+                $_POST['lastname'], 
                 $_POST['firstname'], 
                 $_POST['middlename'], 
                 $_POST['age'], 
-                $_POST['email'], 
-                $_POST['phone'], 
                 $_POST['id']
             ]);
             $successMsg = "Student updated successfully!";
@@ -44,11 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 3. DELETE STUDENT
     elseif (isset($_POST['action']) && $_POST['action'] == 'delete') {
         try {
+            // Check for dependencies first (optional but good practice)
             $stmt = $pdo->prepare("DELETE FROM students WHERE id = ?");
             $stmt->execute([$_POST['id']]);
             $successMsg = "Student record deleted!";
         } catch (PDOException $e) {
-            $errorMsg = "Error: " . $e->getMessage();
+            $errorMsg = "Error: Cannot delete student. They might be enrolled in programs.";
         }
     }
 }
@@ -74,7 +67,7 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
             <thead class="bg-light text-secondary">
                 <tr>
                     <th>ID</th> <th>Last Name</th> <th>First Name</th> <th>Middle Name</th>
-                    <th>Age</th> <th>Email</th> <th>Phone</th> <th class="text-center">Actions</th>
+                    <th>Age</th> <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -85,8 +78,6 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
                     <td><?php echo htmlspecialchars($s['firstname']); ?></td>
                     <td><?php echo htmlspecialchars($s['middlename']); ?></td>
                     <td><?php echo $s['age']; ?></td>
-                    <td class="small text-muted"><?php echo htmlspecialchars($s['email']); ?></td>
-                    <td class="small text-muted"><?php echo htmlspecialchars($s['phone']); ?></td>
                     
                     <td class="text-center">
                         <!-- PROFILE / HISTORY BUTTON -->
@@ -101,8 +92,6 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
                                 data-firstname="<?php echo htmlspecialchars($s['firstname']); ?>"
                                 data-middlename="<?php echo htmlspecialchars($s['middlename']); ?>"
                                 data-age="<?php echo $s['age']; ?>"
-                                data-email="<?php echo htmlspecialchars($s['email']); ?>"
-                                data-phone="<?php echo htmlspecialchars($s['phone']); ?>"
                                 data-bs-toggle="modal" data-bs-target="#editStudentModal">
                             <i class="fas fa-pen"></i>
                         </button>
@@ -132,12 +121,10 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
                 <div class="modal-body p-4 bg-light">
                     <input type="hidden" name="action" value="add">
                     <div class="row g-3">
-                        <div class="col-md-4"><label class="fw-bold small">Last Name</label><input type="text" name="lastname" class="form-control" required placeholder="Ends with '23'"></div>
+                        <div class="col-md-4"><label class="fw-bold small">Last Name</label><input type="text" name="lastname" class="form-control" required></div>
                         <div class="col-md-4"><label class="fw-bold small">First Name</label><input type="text" name="firstname" class="form-control" required></div>
                         <div class="col-md-4"><label class="fw-bold small">Middle Name</label><input type="text" name="middlename" class="form-control"></div>
-                        <div class="col-md-3"><label class="fw-bold small">Age</label><input type="number" name="age" class="form-control" required></div>
-                        <div class="col-md-5"><label class="fw-bold small">Email</label><input type="email" name="email" class="form-control" required></div>
-                        <div class="col-md-4"><label class="fw-bold small">Phone</label><input type="text" name="phone" class="form-control"></div>
+                        <div class="col-md-4"><label class="fw-bold small">Age</label><input type="number" name="age" class="form-control" required></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-light">
@@ -165,9 +152,7 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
                         <div class="col-md-4"><label class="fw-bold small">Last Name</label><input type="text" name="lastname" id="edit_lastname" class="form-control" required></div>
                         <div class="col-md-4"><label class="fw-bold small">First Name</label><input type="text" name="firstname" id="edit_firstname" class="form-control" required></div>
                         <div class="col-md-4"><label class="fw-bold small">Middle Name</label><input type="text" name="middlename" id="edit_middlename" class="form-control"></div>
-                        <div class="col-md-3"><label class="fw-bold small">Age</label><input type="number" name="age" id="edit_age" class="form-control" required></div>
-                        <div class="col-md-5"><label class="fw-bold small">Email</label><input type="email" name="email" id="edit_email" class="form-control" required></div>
-                        <div class="col-md-4"><label class="fw-bold small">Phone</label><input type="text" name="phone" id="edit_phone" class="form-control"></div>
+                        <div class="col-md-4"><label class="fw-bold small">Age</label><input type="number" name="age" id="edit_age" class="form-control" required></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-light">
@@ -202,8 +187,6 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
             $('#edit_firstname').val($(this).data('firstname'));
             $('#edit_middlename').val($(this).data('middlename'));
             $('#edit_age').val($(this).data('age'));
-            $('#edit_email').val($(this).data('email'));
-            $('#edit_phone').val($(this).data('phone'));
         });
     });
 </script>
