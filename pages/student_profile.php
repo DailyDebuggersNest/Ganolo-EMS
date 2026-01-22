@@ -31,19 +31,22 @@ $history = $pdo->query("
     ORDER BY c.year_level ASC, c.semester ASC, e.enrolled_at DESC
 ")->fetchAll();
 
-// 4. Grouping Logic & Data Prep for JS
+// 4. Fetch Payments
+$payments_stmt = $pdo->prepare("SELECT * FROM payments WHERE student_id = ? ORDER BY year_level ASC, semester ASC, payment_date ASC");
+$payments_stmt->execute([$student_id]);
+$all_payments = $payments_stmt->fetchAll();
+
+// 5. Grouping Logic & Data Prep
 $grouped_history = [];
+$grouped_payments = [];
 $js_term_data = []; 
 
 // Helper to determine School Year based on enrollment date
-// If date is 2023-08-01, School Year is 2023-2024
 function getSchoolYear($date) {
     $timestamp = strtotime($date);
     $year = date('Y', $timestamp);
     $month = date('n', $timestamp);
     
-    // Academic year usually starts in August/September
-    // If month is Jan-May (Spring), it belongs to prev year's start
     if ($month < 6) {
         $startYear = $year - 1;
     } else {
@@ -52,18 +55,18 @@ function getSchoolYear($date) {
     return $startYear . '-' . ($startYear + 1);
 }
 
+// Group Enrollment History
 foreach ($history as $row) {
     $key = $row['year_level'] . '-' . $row['semester'];
     $termKey = 'term_' . $key;
     
-    // Calculate School Year string
     $sy = getSchoolYear($row['enrolled_at']);
 
     if (!isset($grouped_history[$key])) {
         $termLabel = "Year " . $row['year_level'] . " • " . $row['semester'] . " Sem • S.Y. " . $sy;
 
         $grouped_history[$key] = [
-            'label' => $termLabel, // New Label Field
+            'label' => $termLabel,
             'year' => $row['year_level'],
             'sem' => $row['semester'],
             'sy' => $sy,
@@ -96,6 +99,28 @@ foreach ($history as $row) {
     if (empty($row['midterm']) && empty($row['final'])) {
         $grouped_history[$key]['is_completed'] = false;
     }
+}
+
+// Group Payments
+foreach ($all_payments as $row) {
+    $key = $row['year_level'] . '-' . $row['semester'];
+    
+    $sy = $row['school_year']; 
+    if (empty($sy)) $sy = getSchoolYear($row['payment_date']);
+
+    if (!isset($grouped_payments[$key])) {
+        $termLabel = "Year " . $row['year_level'] . " • " . $row['semester'] . " Sem • S.Y. " . $sy;
+        $grouped_payments[$key] = [
+            'label' => $termLabel,
+            'records' => [],
+            'total_cost' => 0,
+            'total_paid' => 0
+        ];
+    }
+    
+    $grouped_payments[$key]['records'][] = $row;
+    $grouped_payments[$key]['total_cost'] += $row['cost'];
+    $grouped_payments[$key]['total_paid'] += $row['amount_paid'];
 }
 
 $pageTitle = 'Student Profile';
@@ -145,6 +170,11 @@ include '../includes/sidebar.php';
                     </button>
                 </li>
                 <li class="nav-item">
+                    <button class="nav-link fw-bold px-4" data-bs-toggle="tab" data-bs-target="#payments">
+                        Payment History
+                    </button>
+                </li>
+                <li class="nav-item">
                     <button class="nav-link fw-bold px-4 text-muted" data-bs-toggle="tab" data-bs-target="#personal">
                         Personal Info
                     </button>
@@ -164,7 +194,6 @@ include '../includes/sidebar.php';
                         
                         <!-- CONTROLS ROW -->
                         <div class="row align-items-end mb-4 g-3">
-                            <!-- Term Selector -->
                             <div class="col-md-5">
                                 <label class="fw-bold text-secondary mb-1 small text-uppercase">Select Term</label>
                                 <select id="termSelector" class="form-select form-select-md shadow-sm border-primary fw-bold text-primary">
@@ -176,7 +205,6 @@ include '../includes/sidebar.php';
                                 </select>
                             </div>
                             
-                            <!-- Action Buttons (Redirect Style) -->
                             <div class="col-md-7">
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-success text-white shadow-sm flex-fill" onclick="openTermModal('grades')">
@@ -194,8 +222,6 @@ include '../includes/sidebar.php';
                         <?php foreach ($grouped_history as $key => $group): ?>
                             <div id="term_<?php echo $key; ?>" class="term-content fade <?php echo ($counter === 0) ? 'show active-term' : 'd-none'; ?>">
                                 <div class="card border-0 shadow-sm">
-                                    
-                                    <!-- HEADER -->
                                     <div class="card-header bg-white p-3 d-flex align-items-center">
                                         <div class="me-3">
                                             <?php if ($group['is_completed']): ?>
@@ -249,13 +275,93 @@ include '../includes/sidebar.php';
                     <?php endif; ?>
                 </div>
 
+                <!-- PAYMENTS TAB -->
+                <div class="tab-pane fade" id="payments">
+                     <?php if (empty($grouped_payments)): ?>
+                        <div class="text-center py-5 text-muted bg-white rounded shadow-sm">
+                            <i class="fas fa-receipt fa-3x mb-3 opacity-25"></i>
+                            <p>No payment records found.</p>
+                        </div>
+                    <?php else: ?>
+                        
+                        <!-- CONTROLS ROW -->
+                        <div class="row mb-4 g-3">
+                            <div class="col-md-5">
+                                <label class="fw-bold text-secondary mb-1 small text-uppercase">Select Term</label>
+                                <select id="paymentTermSelector" class="form-select form-select-md shadow-sm border-info fw-bold text-info">
+                                    <?php foreach ($grouped_payments as $key => $group): ?>
+                                        <option value="pay_term_<?php echo $key; ?>">
+                                            <?php echo $group['label']; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- PAYMENT BLOCKS -->
+                        <?php $p_counter = 0; ?>
+                        <?php foreach ($grouped_payments as $key => $group): ?>
+                            <div id="pay_term_<?php echo $key; ?>" class="payment-content fade <?php echo ($p_counter === 0) ? 'show active-term' : 'd-none'; ?>">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-white p-3">
+                                        <h5 class="fw-bold text-dark mb-0"><?php echo $group['label']; ?></h5>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0 align-middle">
+                                                <thead class="bg-light text-secondary small text-uppercase">
+                                                    <tr>
+                                                        <th class="ps-4">Date</th>
+                                                        <th>Remarks</th>
+                                                        <th class="text-end">Cost</th>
+                                                        <th class="text-end">Paid Amount</th>
+                                                        <th class="text-end pe-4">Balance</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($group['records'] as $pay): 
+                                                        $rowBalance = $pay['cost'] - $pay['amount_paid'];
+                                                    ?>
+                                                    <tr>
+                                                        <td class="ps-4 text-muted font-monospace small">
+                                                            <?php echo date('m/d/Y', strtotime($pay['payment_date'])); ?>
+                                                        </td>
+                                                        <td class="fw-bold text-secondary"><?php echo htmlspecialchars($pay['remarks']); ?></td>
+                                                        <td class="text-end"><?php echo number_format($pay['cost'], 2); ?></td>
+                                                        <td class="text-end text-success"><?php echo number_format($pay['amount_paid'], 2); ?></td>
+                                                        <td class="text-end pe-4 fw-bold <?php echo $rowBalance > 0 ? 'text-danger' : 'text-success'; ?>">
+                                                            <?php echo number_format($rowBalance, 2); ?>
+                                                        </td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                                <tfoot class="bg-light fw-bold border-top">
+                                                    <tr>
+                                                        <td colspan="2" class="text-end text-uppercase text-secondary pe-3">Total</td>
+                                                        <td class="text-end"><?php echo number_format($group['total_cost'], 2); ?></td>
+                                                        <td class="text-end text-success"><?php echo number_format($group['total_paid'], 2); ?></td>
+                                                        <td class="text-end pe-4 <?php echo ($group['total_cost'] - $group['total_paid']) > 0 ? 'text-danger' : 'text-success'; ?>">
+                                                            <?php echo number_format($group['total_cost'] - $group['total_paid'], 2); ?>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php $p_counter++; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
                 <div class="tab-pane fade" id="personal"><div class="card p-5 text-center text-muted">Personal Info Module Coming Soon</div></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- LARGE REPORT MODAL -->
+<!-- LARGE REPORT MODAL (Existing) -->
 <div class="modal fade" id="reportModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0">
@@ -281,8 +387,22 @@ include '../includes/sidebar.php';
 <script>
     const termData = <?php echo json_encode($js_term_data); ?>;
 
-    document.getElementById('termSelector').addEventListener('change', function() {
-        document.querySelectorAll('.term-content').forEach(el => {
+    // HISTORY TERM SELECTOR
+    document.getElementById('termSelector')?.addEventListener('change', function() {
+        document.querySelectorAll('#history .term-content').forEach(el => {
+            el.classList.add('d-none');
+            el.classList.remove('show');
+        });
+        const target = document.getElementById(this.value);
+        if(target) {
+            target.classList.remove('d-none');
+            setTimeout(() => target.classList.add('show'), 10);
+        }
+    });
+
+    // PAYMENT TERM SELECTOR
+    document.getElementById('paymentTermSelector')?.addEventListener('change', function() {
+        document.querySelectorAll('#payments .payment-content').forEach(el => {
             el.classList.add('d-none');
             el.classList.remove('show');
         });
