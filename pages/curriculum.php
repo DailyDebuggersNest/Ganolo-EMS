@@ -64,118 +64,145 @@ try {
 
 <?php include '../includes/sidebar.php'; ?>
 
-<div class="container-fluid main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-secondary">Curriculum Management</h2>
-        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
-            <i class="fas fa-plus me-2"></i>Add Subject
+<div class="main-content">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Curriculum</h1>
+            <p class="page-subtitle">Manage subjects and course curriculum</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+            <i class="fas fa-plus"></i>
+            <span>Add Subject</span>
         </button>
     </div>
 
-    <?php if (isset($successMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire('Success', '<?php echo $successMsg; ?>', 'success'));</script><?php endif; ?>
-    <?php if (isset($errorMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire('Error', '<?php echo $errorMsg; ?>', 'error'));</script><?php endif; ?>
+    <?php if (isset($successMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire({title: 'Success', text: '<?php echo $successMsg; ?>', icon: 'success', confirmButtonColor: '#5a6578'}));</script><?php endif; ?>
+    <?php if (isset($errorMsg)): ?><script>document.addEventListener("DOMContentLoaded", () => Swal.fire({title: 'Error', text: '<?php echo $errorMsg; ?>', icon: 'error', confirmButtonColor: '#4a5568'}));</script><?php endif; ?>
 
-    <!-- FILTER CARD -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body bg-light rounded">
-            <form method="GET" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small text-muted">Course</label>
-                    <select name="courseID" class="form-select">
-                        <option value="">All Courses</option>
-                        <?php foreach($courses as $c): ?>
-                            <option value="<?php echo $c['courseID']; ?>" <?php echo ($selectedCourse == $c['courseID']) ? 'selected' : ''; ?>>
-                                <?php echo $c['course_code']; ?> - <?php echo $c['description']; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small text-muted">Year Level</label>
-                    <select name="year_level" class="form-select">
-                        <option value="">All Years</option>
-                        <option value="1" <?php echo ($selectedYear == '1') ? 'selected' : ''; ?>>1st Year</option>
-                        <option value="2" <?php echo ($selectedYear == '2') ? 'selected' : ''; ?>>2nd Year</option>
-                        <option value="3" <?php echo ($selectedYear == '3') ? 'selected' : ''; ?>>3rd Year</option>
-                        <option value="4" <?php echo ($selectedYear == '4') ? 'selected' : ''; ?>>4th Year</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small text-muted">Semester</label>
-                    <select name="semester" class="form-select">
-                        <option value="">All Semesters</option>
-                        <option value="1st" <?php echo ($selectedSem == '1st') ? 'selected' : ''; ?>>1st Sem</option>
-                        <option value="2nd" <?php echo ($selectedSem == '2nd') ? 'selected' : ''; ?>>2nd Sem</option>
-                        <option value="Summer" <?php echo ($selectedSem == 'Summer') ? 'selected' : ''; ?>>Summer</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" name="filter" value="1" class="btn btn-secondary w-100">
-                        <i class="fas fa-filter me-2"></i>Apply Filter
-                    </button>
-                </div>
-            </form>
-        </div>
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <form method="GET" class="d-flex gap-3 align-items-end" style="flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <label class="form-label">Course</label>
+                <select name="courseID" class="form-select">
+                    <option value="">All Courses</option>
+                    <?php foreach($courses as $c): ?>
+                        <option value="<?php echo $c['courseID']; ?>" <?php echo ($selectedCourse == $c['courseID']) ? 'selected' : ''; ?>>
+                            <?php echo $c['course_code']; ?> - <?php echo $c['description']; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div style="min-width: 140px;">
+                <label class="form-label">Year Level</label>
+                <select name="year_level" class="form-select">
+                    <option value="">All Years</option>
+                    <option value="1" <?php echo ($selectedYear == '1') ? 'selected' : ''; ?>>1st Year</option>
+                    <option value="2" <?php echo ($selectedYear == '2') ? 'selected' : ''; ?>>2nd Year</option>
+                    <option value="3" <?php echo ($selectedYear == '3') ? 'selected' : ''; ?>>3rd Year</option>
+                    <option value="4" <?php echo ($selectedYear == '4') ? 'selected' : ''; ?>>4th Year</option>
+                </select>
+            </div>
+            <div style="min-width: 140px;">
+                <label class="form-label">Semester</label>
+                <select name="semester" class="form-select">
+                    <option value="">All Semesters</option>
+                    <option value="1st" <?php echo ($selectedSem == '1st') ? 'selected' : ''; ?>>1st Sem</option>
+                    <option value="2nd" <?php echo ($selectedSem == '2nd') ? 'selected' : ''; ?>>2nd Sem</option>
+                    <option value="Summer" <?php echo ($selectedSem == 'Summer') ? 'selected' : ''; ?>>Summer</option>
+                </select>
+            </div>
+            <button type="submit" name="filter" value="1" class="btn btn-secondary">
+                <i class="fas fa-filter"></i>
+                <span>Apply Filter</span>
+            </button>
+        </form>
     </div>
 
-    <div class="card border-0 shadow-sm p-4">
-        <table id="curriculumTable" class="table table-hover align-middle">
-            <thead class="bg-light text-secondary">
-                <tr>
-                    <th>CurrID</th> <th>Course</th> <th>SUBJECT</th> <th>Description</th>
-                    <th>Year</th> <th>Sem</th> <th>Units</th> <th class="text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (count($subjects) > 0): ?>
-                    <?php foreach ($subjects as $s): ?>
+    <!-- Data Table Card -->
+    <div class="card flex-fill">
+        <div class="table-wrapper">
+            <table id="curriculumTable" class="table table-hover align-middle" style="margin-bottom: 0;">
+                <thead>
                     <tr>
-                        <td class="font-monospace text-muted small"><?php echo str_pad($s['CurriculumID'], 4, '0', STR_PAD_LEFT); ?></td>
-                        <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($s['course_code'] ?? 'N/A'); ?></span></td>
-                        <td class="fw-bold text-primary"><?php echo htmlspecialchars($s['subject_code']); ?></td>
-                        <td><?php echo htmlspecialchars($s['description']); ?></td>
-                        <td><?php echo $s['year_level']; ?></td>
-                        <td><?php echo $s['semester']; ?></td>
-                        <td><?php echo $s['units']; ?></td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-warning btn-sm edit-btn"
-                                    data-id="<?php echo $s['CurriculumID']; ?>"
-                                    data-courseid="<?php echo $s['courseID']; ?>"
-                                    data-code="<?php echo htmlspecialchars($s['subject_code']); ?>"
-                                    data-desc="<?php echo htmlspecialchars($s['description']); ?>"
-                                    data-year="<?php echo $s['year_level']; ?>"
-                                    data-sem="<?php echo $s['semester']; ?>"
-                                    data-units="<?php echo $s['units']; ?>"
-                                    data-bs-toggle="modal" data-bs-target="#editSubjectModal">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <form method="POST" class="d-inline delete-form">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="id" value="<?php echo $s['CurriculumID']; ?>">
-                                <button type="button" class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-                            </form>
-                        </td>
+                        <th style="padding-left: 24px; width: 80px;">ID</th>
+                        <th style="width: 100px;">Course</th>
+                        <th style="width: 120px;">Subject</th>
+                        <th>Description</th>
+                        <th style="width: 70px;">Year</th>
+                        <th style="width: 80px;">Sem</th>
+                        <th style="width: 70px;">Units</th>
+                        <th class="text-center" style="width: 120px;">Actions</th>
                     </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php if (count($subjects) > 0): ?>
+                        <?php foreach ($subjects as $s): ?>
+                        <tr>
+                            <td style="padding-left: 24px;">
+                                <span class="font-monospace text-muted" style="font-size: 0.8rem;"><?php echo str_pad($s['CurriculumID'], 4, '0', STR_PAD_LEFT); ?></span>
+                            </td>
+                            <td><span class="badge bg-info"><?php echo htmlspecialchars($s['course_code'] ?? 'N/A'); ?></span></td>
+                            <td style="font-weight: 600; color: var(--text-primary, #1a202c);"><?php echo htmlspecialchars($s['subject_code']); ?></td>
+                            <td><?php echo htmlspecialchars($s['description']); ?></td>
+                            <td class="text-center"><?php echo $s['year_level']; ?></td>
+                            <td><span class="badge badge-sem badge-sem-<?php echo strtolower($s['semester']); ?>"><?php echo $s['semester']; ?></span></td>
+                            <td class="text-center"><?php echo $s['units']; ?></td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-warning btn-icon edit-btn"
+                                        data-id="<?php echo $s['CurriculumID']; ?>"
+                                        data-courseid="<?php echo $s['courseID']; ?>"
+                                        data-code="<?php echo htmlspecialchars($s['subject_code']); ?>"
+                                        data-desc="<?php echo htmlspecialchars($s['description']); ?>"
+                                        data-year="<?php echo $s['year_level']; ?>"
+                                        data-sem="<?php echo $s['semester']; ?>"
+                                        data-units="<?php echo $s['units']; ?>"
+                                        data-bs-toggle="modal" data-bs-target="#editSubjectModal"
+                                        title="Edit">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <form method="POST" class="d-inline delete-form">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?php echo $s['CurriculumID']; ?>">
+                                    <button type="button" class="btn btn-danger btn-icon delete-btn" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="fas fa-book"></i>
+                                    <p style="margin: 0; font-size: 0.95rem;">No subjects found</p>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <!-- ADD MODAL -->
 <div class="modal fade" id="addSubjectModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">New Curriculum Subject</h5>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title" style="color: white;">
+                    <i class="fas fa-plus-circle me-2"></i>New Curriculum Subject
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
-                <div class="modal-body p-4 bg-light">
+                <div class="modal-body" style="padding: 32px;">
                     <input type="hidden" name="action" value="add">
-                    <div class="mb-3">
-                        <label class="fw-bold small">Course</label>
+                    <div class="mb-4">
+                        <label class="form-label">Course</label>
                         <select name="courseID" class="form-select" required>
                             <option value="">Select Course...</option>
                             <?php foreach($courses as $c): ?>
@@ -183,21 +210,40 @@ try {
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-3"><label class="fw-bold small">Subject Code</label><input type="text" name="subject_code" class="form-control" placeholder="e.g. IT 101" required></div>
-                    <div class="mb-3"><label class="fw-bold small">Description</label><input type="text" name="description" class="form-control" required></div>
-                    <div class="row">
-                        <div class="col-4"><label class="fw-bold small">Year</label><input type="number" name="year_level" class="form-control" min="1" max="4" required></div>
-                        <div class="col-4"><label class="fw-bold small">Sem</label>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Subject Code</label>
+                            <input type="text" name="subject_code" class="form-control" placeholder="e.g. IT 101" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Description</label>
+                            <input type="text" name="description" class="form-control" placeholder="e.g. Introduction to Computing" required>
+                        </div>
+                    </div>
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Year Level</label>
+                            <input type="number" name="year_level" class="form-control" min="1" max="4" placeholder="1-4" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Semester</label>
                             <select name="semester" class="form-select">
-                                <option value="1st">1st</option><option value="2nd">2nd</option><option value="Summer">Summer</option>
+                                <option value="1st">1st Semester</option>
+                                <option value="2nd">2nd Semester</option>
+                                <option value="Summer">Summer</option>
                             </select>
                         </div>
-                        <div class="col-4"><label class="fw-bold small">Units</label><input type="number" name="units" class="form-control" value="3" required></div>
+                        <div class="col-md-4">
+                            <label class="form-label">Units</label>
+                            <input type="number" name="units" class="form-control" value="3" min="1" max="12" required>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Subject
+                    </button>
                 </div>
             </form>
         </div>
@@ -206,39 +252,60 @@ try {
 
 <!-- EDIT MODAL -->
 <div class="modal fade" id="editSubjectModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title">Edit Subject</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" style="color: white;">
+                    <i class="fas fa-edit me-2"></i>Edit Subject
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST">
-                <div class="modal-body p-4 bg-light">
+                <div class="modal-body" style="padding: 32px;">
                     <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="id" id="edit_id">
-                    <div class="mb-3">
-                        <label class="fw-bold small">Course</label>
+                    <div class="mb-4">
+                        <label class="form-label">Course</label>
                         <select name="courseID" id="edit_courseID" class="form-select" required>
                             <?php foreach($courses as $c): ?>
-                                <option value="<?php echo $c['courseID']; ?>"><?php echo $c['course_code']; ?></option>
+                                <option value="<?php echo $c['courseID']; ?>"><?php echo $c['course_code']; ?> - <?php echo $c['description']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-3"><label class="fw-bold small">Subject Code</label><input type="text" name="subject_code" id="edit_code" class="form-control" required></div>
-                    <div class="mb-3"><label class="fw-bold small">Description</label><input type="text" name="description" id="edit_desc" class="form-control" required></div>
-                    <div class="row">
-                        <div class="col-4"><label class="fw-bold small">Year</label><input type="number" name="year_level" id="edit_year" class="form-control" min="1" max="4" required></div>
-                        <div class="col-4"><label class="fw-bold small">Sem</label>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Subject Code</label>
+                            <input type="text" name="subject_code" id="edit_code" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Description</label>
+                            <input type="text" name="description" id="edit_desc" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Year Level</label>
+                            <input type="number" name="year_level" id="edit_year" class="form-control" min="1" max="4" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Semester</label>
                             <select name="semester" id="edit_sem" class="form-select">
-                                <option value="1st">1st</option><option value="2nd">2nd</option><option value="Summer">Summer</option>
+                                <option value="1st">1st Semester</option>
+                                <option value="2nd">2nd Semester</option>
+                                <option value="Summer">Summer</option>
                             </select>
                         </div>
-                        <div class="col-4"><label class="fw-bold small">Units</label><input type="number" name="units" id="edit_units" class="form-control" required></div>
+                        <div class="col-md-4">
+                            <label class="form-label">Units</label>
+                            <input type="number" name="units" id="edit_units" class="form-control" required>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-warning">Update</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" style="color: white;">
+                        <i class="fas fa-check me-2"></i>Update Subject
+                    </button>
                 </div>
             </form>
         </div>
@@ -247,7 +314,15 @@ try {
 
 <script>
     $(document).ready(function() {
-        $('#curriculumTable').DataTable({ "pageLength": 5, "lengthMenu": [5, 10, 25, 50, 75, 100] });
+        $('#curriculumTable').DataTable({ 
+            "pageLength": 10, 
+            "lengthMenu": [5, 10, 25, 50],
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Search subjects...",
+                "lengthMenu": "Show _MENU_ entries"
+            }
+        });
 
         $(document).on('click', '.edit-btn', function() {
             $('#edit_id').val($(this).data('id'));
@@ -262,8 +337,14 @@ try {
         $(document).on('click', '.delete-btn', function() {
             var form = $(this).closest('form');
             Swal.fire({
-                title: 'Delete Subject?', text: "Undoing is impossible.", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes, delete'
+                title: 'Delete this subject?',
+                text: "This action cannot be undone.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f56565',
+                cancelButtonColor: '#4a5568',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel'
             }).then((result) => { if (result.isConfirmed) form.submit(); })
         });
     });

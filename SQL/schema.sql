@@ -12,9 +12,11 @@ CREATE TABLE `course` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO `course` (`courseID`, `course_code`, `description`) VALUES
-('IT', 'BSIT', 'Bachelor of Science in Information Technology'),
-('CS', 'BSCS', 'Bachelor of Science in Computer Science'),
-('HM', 'BSHM', 'Bachelor of Science in Hospitality Management');
+('0001', 'BSIT', 'Bachelor of Science in Information Technology'),
+('0002', 'BSCS', 'Bachelor of Science in Computer Science'),
+('0003', 'BSHM', 'Bachelor of Science in Hospitality Management'),
+('0004', 'BSCRIM', 'Bachelor of Science in Criminology'),
+('0005', 'BSED', 'Bachelor of Science in Education');
 
 -- 3. CREATE CURRICULUM TABLE
 CREATE TABLE `curriculum` (
@@ -32,64 +34,64 @@ CREATE TABLE `curriculum` (
 -- SEED COMPLETE 4-YEAR CURRICULUM (BSIT)
 INSERT INTO `curriculum` (`courseID`, `subject_code`, `description`, `year_level`, `semester`, `units`) VALUES
 -- Year 1, 1st Semester
-('IT', 'IT 101', 'Introduction to Computing', 1, '1st', 3),
-('IT', 'IT 102', 'Computer Programming 1', 1, '1st', 3),
-('IT', 'MATH 101', 'College Algebra', 1, '1st', 3),
-('IT', 'ENG 101', 'Purposive Communication', 1, '1st', 3),
-('IT', 'PE 101', 'Physical Fitness', 1, '1st', 2),
-('IT', 'NSTP 101', 'National Service Training Program 1', 1, '1st', 3),
+('0001', 'IT 101', 'Introduction to Computing', 1, '1st', 3),
+('0001', 'IT 102', 'Computer Programming 1', 1, '1st', 3),
+('0001', 'MATH 101', 'College Algebra', 1, '1st', 3),
+('0001', 'ENG 101', 'Purposive Communication', 1, '1st', 3),
+('0001', 'PE 101', 'Physical Fitness', 1, '1st', 2),
+('0001', 'NSTP 101', 'National Service Training Program 1', 1, '1st', 3),
 
 -- Year 1, 2nd Semester
-('IT', 'IT 103', 'Computer Programming 2', 1, '2nd', 3),
-('IT', 'IT 104', 'Data Structures and Algorithms', 1, '2nd', 3),
-('IT', 'MATH 102', 'Trigonometry', 1, '2nd', 3),
-('IT', 'ENG 102', 'Contemporary World', 1, '2nd', 3),
-('IT', 'PE 102', 'Rhythmic Activities', 1, '2nd', 2),
-('IT', 'NSTP 102', 'National Service Training Program 2', 1, '2nd', 3),
+('0001', 'IT 103', 'Computer Programming 2', 1, '2nd', 3),
+('0001', 'IT 104', 'Data Structures and Algorithms', 1, '2nd', 3),
+('0001', 'MATH 102', 'Trigonometry', 1, '2nd', 3),
+('0001', 'ENG 102', 'Contemporary World', 1, '2nd', 3),
+('0001', 'PE 102', 'Rhythmic Activities', 1, '2nd', 2),
+('0001', 'NSTP 102', 'National Service Training Program 2', 1, '2nd', 3),
 
 -- Year 2, 1st Semester
-('IT', 'IT 201', 'Object Oriented Programming', 2, '1st', 3),
-('IT', 'IT 202', 'Digital Logic Design', 2, '1st', 3),
-('IT', 'IT 203', 'Platform Technologies', 2, '1st', 3),
-('IT', 'MATH 201', 'Discrete Mathematics', 2, '1st', 3),
-('IT', 'PE 201', 'Individual and Dual Sports', 2, '1st', 2),
-('IT', 'FIL 101', 'Komunikasyon sa Akademikong Filipino', 2, '1st', 3),
+('0001', 'IT 201', 'Object Oriented Programming', 2, '1st', 3),
+('0001', 'IT 202', 'Digital Logic Design', 2, '1st', 3),
+('0001', 'IT 203', 'Platform Technologies', 2, '1st', 3),
+('0001', 'MATH 201', 'Discrete Mathematics', 2, '1st', 3),
+('0001', 'PE 201', 'Individual and Dual Sports', 2, '1st', 2),
+('0001', 'FIL 101', 'Komunikasyon sa Akademikong Filipino', 2, '1st', 3),
 
 -- Year 2, 2nd Semester
-('IT', 'IT 204', 'Information Management', 2, '2nd', 3),
-('IT', 'IT 205', 'Networking 1', 2, '2nd', 3),
-('IT', 'IT 206', 'Web Systems and Technologies', 2, '2nd', 3),
-('IT', 'STAT 201', 'Probability and Statistics', 2, '2nd', 3),
-('IT', 'PE 202', 'Team Sports', 2, '2nd', 2),
-('IT', 'FIL 102', 'Pagbasa at Pagsulat', 2, '2nd', 3),
+('0001', 'IT 204', 'Information Management', 2, '2nd', 3),
+('0001', 'IT 205', 'Networking 1', 2, '2nd', 3),
+('0001', 'IT 206', 'Web Systems and Technologies', 2, '2nd', 3),
+('0001', 'STAT 201', 'Probability and Statistics', 2, '2nd', 3),
+('0001', 'PE 202', 'Team Sports', 2, '2nd', 2),
+('0001', 'FIL 102', 'Pagbasa at Pagsulat', 2, '2nd', 3),
 
 -- Year 3, 1st Semester
-('IT', 'IT 301', 'Advanced Database Systems', 3, '1st', 3),
-('IT', 'IT 302', 'Networking 2', 3, '1st', 3),
-('IT', 'IT 303', 'System Integration and Architecture', 3, '1st', 3),
-('IT', 'IT 304', 'Human Computer Interaction', 3, '1st', 3),
-('IT', 'RES 301', 'Methods of Research', 3, '1st', 3),
-('IT', 'ELEC 301', 'Professional Elective 1', 3, '1st', 3),
+('0001', 'IT 301', 'Advanced Database Systems', 3, '1st', 3),
+('0001', 'IT 302', 'Networking 2', 3, '1st', 3),
+('0001', 'IT 303', 'System Integration and Architecture', 3, '1st', 3),
+('0001', 'IT 304', 'Human Computer Interaction', 3, '1st', 3),
+('0001', 'RES 301', 'Methods of Research', 3, '1st', 3),
+('0001', 'ELEC 301', 'Professional Elective 1', 3, '1st', 3),
 
 -- Year 3, 2nd Semester
-('IT', 'IT 305', 'Systems Administration and Maintenance', 3, '2nd', 3),
-('IT', 'IT 306', 'Information Assurance and Security', 3, '2nd', 3),
-('IT', 'IT 307', 'Social and Professional Issues', 3, '2nd', 3),
-('IT', 'IT 308', 'Software Engineering', 3, '2nd', 3),
-('IT', 'ELEC 302', 'Professional Elective 2', 3, '2nd', 3),
-('IT', 'RIZAL 101', 'Life and Works of Rizal', 3, '2nd', 3),
+('0001', 'IT 305', 'Systems Administration and Maintenance', 3, '2nd', 3),
+('0001', 'IT 306', 'Information Assurance and Security', 3, '2nd', 3),
+('0001', 'IT 307', 'Social and Professional Issues', 3, '2nd', 3),
+('0001', 'IT 308', 'Software Engineering', 3, '2nd', 3),
+('0001', 'ELEC 302', 'Professional Elective 2', 3, '2nd', 3),
+('0001', 'RIZAL 101', 'Life and Works of Rizal', 3, '2nd', 3),
 
 -- Year 4, 1st Semester
-('IT', 'IT 401', 'Capstone Project 1', 4, '1st', 3),
-('IT', 'IT 402', 'System Administration', 4, '1st', 3),
-('IT', 'ELEC 401', 'Professional Elective 3', 4, '1st', 3),
-('IT', 'ELEC 402', 'Professional Elective 4', 4, '1st', 3),
-('IT', 'TECH 401', 'Technopreneurship', 4, '1st', 3),
+('0001', 'IT 401', 'Capstone Project 1', 4, '1st', 3),
+('0001', 'IT 402', 'System Administration', 4, '1st', 3),
+('0001', 'ELEC 401', 'Professional Elective 3', 4, '1st', 3),
+('0001', 'ELEC 402', 'Professional Elective 4', 4, '1st', 3),
+('0001', 'TECH 401', 'Technopreneurship', 4, '1st', 3),
 
 -- Year 4, 2nd Semester
-('IT', 'IT 403', 'Capstone Project 2', 4, '2nd', 3),
-('IT', 'IT 404', 'Practicum / Internship (486 Hours)', 4, '2nd', 6),
-('IT', 'SEM 401', 'Seminars and Field Trips', 4, '2nd', 3);
+('0001', 'IT 403', 'Capstone Project 2', 4, '2nd', 3),
+('0001', 'IT 404', 'Practicum / Internship (486 Hours)', 4, '2nd', 6),
+('0001', 'SEM 401', 'Seminars and Field Trips', 4, '2nd', 3);
 
 
 -- 4. CREATE STUDENTS TABLE
