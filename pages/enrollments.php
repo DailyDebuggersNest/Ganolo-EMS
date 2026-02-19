@@ -163,7 +163,7 @@ foreach ($studentCourseMap as $sc) {
             <table id="enrollmentTable" class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>enrollID</th>
                         <th>Student Name</th>
                         <th>Course</th>
                         <th>Subject</th>
@@ -193,7 +193,7 @@ foreach ($studentCourseMap as $sc) {
                                 <form method="POST" class="d-inline delete-form">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn" title="Remove enrollment">
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn" title="Remove enrollment" data-bs-tooltip="tooltip">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
@@ -286,6 +286,9 @@ foreach ($studentCourseMap as $sc) {
 
 <script>
     $(document).ready(function() {
+        // Initialize tooltips
+        $('[title]').tooltip({trigger: 'hover'});
+
         <?php if (count($enrollments) > 0): ?>
         $('#enrollmentTable').DataTable({
             pageLength: 10,

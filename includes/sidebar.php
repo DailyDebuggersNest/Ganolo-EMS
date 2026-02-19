@@ -27,19 +27,19 @@
         </div>
         
         <div class="nav-menu">
-            <a href="dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
+            <a href="dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>" title="Dashboard" data-bs-toggle="tooltip" data-bs-placement="right">
                 <i class="fas fa-th-large"></i><span>Dashboard</span>
             </a>
-            <a href="courses.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'courses.php' ? 'active' : ''; ?>">
+            <a href="courses.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'courses.php' ? 'active' : ''; ?>" title="Courses" data-bs-toggle="tooltip" data-bs-placement="right">
                 <i class="fas fa-book-open"></i><span>Courses</span>
             </a>
-            <a href="students.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'students.php' ? 'active' : ''; ?>">
+            <a href="students.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'students.php' ? 'active' : ''; ?>" title="Student List" data-bs-toggle="tooltip" data-bs-placement="right">
                 <i class="fas fa-users"></i><span>Student List</span>
             </a>
-            <a href="curriculum.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'curriculum.php' ? 'active' : ''; ?>">
+            <a href="curriculum.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'curriculum.php' ? 'active' : ''; ?>" title="Curriculum" data-bs-toggle="tooltip" data-bs-placement="right">
                 <i class="fas fa-list-alt"></i><span>Curriculum</span>
             </a>
-            <a href="enrollments.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'enrollments.php' ? 'active' : ''; ?>">
+            <a href="enrollments.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'enrollments.php' ? 'active' : ''; ?>" title="Enrollments" data-bs-toggle="tooltip" data-bs-placement="right">
                 <i class="fas fa-clipboard-list"></i><span>Enrollments</span>
             </a>
         </div>
@@ -89,4 +89,11 @@
                     localStorage.setItem('sidebarExpanded', isNowExpanded);
                 });
             })();
+
+            // Initialize Bootstrap tooltips on sidebar nav links
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.nav-menu [data-bs-toggle="tooltip"]').forEach(function(el) {
+                    new bootstrap.Tooltip(el);
+                });
+            });
         </script>

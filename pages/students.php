@@ -76,7 +76,7 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
                         <td class="text-muted"><?php echo htmlspecialchars($s['middlename']); ?></td>
                         <td><?php echo $s['age']; ?></td>
                         <td class="text-center">
-                            <a href="student_profile.php?id=<?php echo $s['id']; ?>" class="btn btn-outline-primary btn-sm" title="View Profile">
+                            <a href="student_profile.php?id=<?php echo $s['id']; ?>" class="btn btn-outline-primary btn-sm" title="View Profile" data-bs-toggle="tooltip">
                                 <i class="fas fa-eye"></i>
                             </a>
                             <button type="button" class="btn btn-outline-primary btn-sm edit-btn"
@@ -86,13 +86,13 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
                                     data-middlename="<?php echo htmlspecialchars($s['middlename']); ?>"
                                     data-age="<?php echo $s['age']; ?>"
                                     data-bs-toggle="modal" data-bs-target="#editStudentModal"
-                                    title="Edit">
+                                    title="Edit" data-bs-tooltip="tooltip">
                                 <i class="fas fa-pen"></i>
                             </button>
                             <form method="POST" class="d-inline delete-form">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
-                                <button type="button" class="btn btn-outline-danger btn-sm delete-btn" title="Delete">
+                                <button type="button" class="btn btn-outline-danger btn-sm delete-btn" title="Delete" data-bs-tooltip="tooltip">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
@@ -196,6 +196,9 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
 
 <script>
     $(document).ready(function() {
+        // Initialize tooltips
+        $('[title]').tooltip({trigger: 'hover'});
+
         $('#studentsTable').DataTable({ 
             "pageLength": 10, 
             "lengthMenu": [5, 10, 25],

@@ -317,11 +317,6 @@ include '../includes/sidebar.php';
                 <i class="fas fa-receipt me-2"></i>Payment History
             </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#personal">
-                <i class="fas fa-user-circle me-2"></i>Personal Info
-            </button>
-        </li>
     </ul>
 
     <div class="tab-content">
@@ -504,14 +499,6 @@ include '../includes/sidebar.php';
             <?php endif; ?>
         </div>
 
-        <!-- Personal Info Tab -->
-        <div class="tab-pane fade" id="personal">
-            <div class="empty-state">
-                <i class="fas fa-user-circle"></i>
-                <h5>Personal Info Module</h5>
-                <p>This section is coming soon with detailed student information.</p>
-            </div>
-        </div>
     </div>
 </div>
 

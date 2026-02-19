@@ -93,7 +93,7 @@ $uniqueCodes = $pdo->query("SELECT DISTINCT course_code FROM course ORDER BY cou
             <table id="coursesTable" class="table table-hover">
                 <thead>
                     <tr>
-                        <th style="padding-left: 20px; width: 100px;">ID</th>
+                        <th style="padding-left: 20px; width: 100px;">courseID</th>
                         <th style="width: 140px;">Course</th>
                         <th>Description</th>
                         <th class="text-center" style="width: 120px;">Actions</th>
@@ -113,13 +113,13 @@ $uniqueCodes = $pdo->query("SELECT DISTINCT course_code FROM course ORDER BY cou
                                 data-code="<?php echo htmlspecialchars($c['course_code']); ?>"
                                 data-desc="<?php echo htmlspecialchars($c['description']); ?>"
                                 data-bs-toggle="modal" data-bs-target="#editCourseModal"
-                                title="Edit">
+                                title="Edit" data-bs-tooltip="tooltip">
                             <i class="fas fa-pen"></i>
                         </button>
                         <form method="POST" class="d-inline delete-form">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?php echo $c['courseID']; ?>">
-                            <button type="button" class="btn btn-outline-danger btn-sm delete-btn" title="Delete">
+                            <button type="button" class="btn btn-outline-danger btn-sm delete-btn" title="Delete" data-bs-tooltip="tooltip">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
@@ -207,6 +207,9 @@ $uniqueCodes = $pdo->query("SELECT DISTINCT course_code FROM course ORDER BY cou
 
 <script>
     $(document).ready(function() {
+        // Initialize tooltips
+        $('[title]').tooltip({trigger: 'hover'});
+
         $('#coursesTable').DataTable({ 
             "pageLength": 10, 
             "lengthMenu": [5, 10, 25],

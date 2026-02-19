@@ -126,7 +126,7 @@ try {
             <table id="curriculumTable" class="table table-hover align-middle" style="margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="padding-left: 24px; width: 80px;">ID</th>
+                        <th style="padding-left: 24px; width: 80px;">currID</th>
                         <th style="width: 100px;">Course</th>
                         <th style="width: 120px;">Subject</th>
                         <th>Description</th>
