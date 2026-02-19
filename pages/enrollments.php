@@ -8,8 +8,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 1. ADD ENROLLMENT
     if (isset($_POST['action']) && $_POST['action'] == 'add') {
         try {
+            // Insert enrollment
             $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, subject_id) VALUES (?, ?)");
             $stmt->execute([$_POST['student_id'], $_POST['subject_id']]);
+            $enrollmentId = $pdo->lastInsertId();
+
+            // Auto-generate schedule for this enrollment
+            $days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'MON/WED', 'TUE/THU', 'MON/THU', 'WED/FRI'];
+            $times = [
+                ['07:00 AM', '10:00 AM'], ['08:00 AM', '11:00 AM'], ['09:00 AM', '12:00 PM'],
+                ['10:00 AM', '01:00 PM'], ['01:00 PM', '04:00 PM'], ['02:00 PM', '05:00 PM'],
+                ['03:00 PM', '06:00 PM'], ['04:00 PM', '07:00 PM']
+            ];
+            $rooms = ['ROOM 101','ROOM 102','ROOM 201','ROOM 202','ROOM 301','ROOM 302','ROOM 401','LAB 1','LAB 2','LAB 3','LAB 4','LEC 1','LEC 2','AVR','GYM'];
+
+            $day = $days[array_rand($days)];
+            $time = $times[array_rand($times)];
+            $room = $rooms[array_rand($rooms)];
+
+            $schedStmt = $pdo->prepare("INSERT INTO schedule (enrollment_id, day, time_in, time_out, room) VALUES (?, ?, ?, ?, ?)");
+            $schedStmt->execute([$enrollmentId, $day, $time[0], $time[1], $room]);
+
             $successMsg = "Student enrolled successfully!";
         } catch (PDOException $e) { $errorMsg = "Error: " . $e->getMessage(); }
     }
@@ -57,8 +76,23 @@ $enrollments = $stmt->fetchAll();
 
 // Fetch Options for Dropdowns
 $students = $pdo->query("SELECT id, firstname, lastname FROM students ORDER BY lastname ASC")->fetchAll();
-$subjects = $pdo->query("SELECT CurriculumID, subject_code, description, courseID FROM curriculum ORDER BY courseID, year_level, semester ASC")->fetchAll();
+$subjects = $pdo->query("SELECT cur.CurriculumID, cur.subject_code, cur.description, cur.courseID, COALESCE(co.course_code, '') as course_code FROM curriculum cur LEFT JOIN course co ON cur.courseID = co.courseID ORDER BY cur.courseID, cur.year_level, cur.semester ASC")->fetchAll();
 $courses = $pdo->query("SELECT * FROM course ORDER BY courseID ASC")->fetchAll();
+
+// Build student-to-course mapping (which course each student belongs to based on their enrollments)
+$studentCourseMap = $pdo->query("
+    SELECT DISTINCT e.student_id, c.courseID, COALESCE(co.course_code, '') as course_code
+    FROM enrollments e 
+    JOIN curriculum c ON e.subject_id = c.CurriculumID 
+    LEFT JOIN course co ON c.courseID = co.courseID
+    WHERE c.courseID IS NOT NULL
+")->fetchAll();
+$studentCourses = [];
+$studentCourseNames = [];
+foreach ($studentCourseMap as $sc) {
+    $studentCourses[$sc['student_id']] = $sc['courseID'];
+    $studentCourseNames[$sc['student_id']] = $sc['course_code'];
+}
 ?>
 
 <?php include '../includes/sidebar.php'; ?>
@@ -184,7 +218,7 @@ $courses = $pdo->query("SELECT * FROM course ORDER BY courseID ASC")->fetchAll()
 
 <!-- ADD MODAL -->
 <div class="modal fade" id="addModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
@@ -196,28 +230,36 @@ $courses = $pdo->query("SELECT * FROM course ORDER BY courseID ASC")->fetchAll()
             <form method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add">
+                    
+                    <!-- Step 1: Select Course -->
+                    <div class="mb-3">
+                        <label class="form-label">Course <span class="text-danger">*</span></label>
+                        <select id="modal_course" class="form-select" required>
+                            <option value="">Select a course first...</option>
+                            <?php foreach ($courses as $c): ?>
+                                <option value="<?php echo $c['courseID']; ?>"><?php echo htmlspecialchars($c['course_code'] . ' - ' . $c['description']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">Select the course to filter students and subjects</div>
+                    </div>
+
                     <div class="row">
+                        <!-- Step 2: Student (filtered by course) -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Student <span class="text-danger">*</span></label>
-                            <select name="student_id" class="form-select" required>
-                                <option value="">Select a student...</option>
-                                <?php foreach ($students as $s): ?>
-                                    <option value="<?php echo $s['id']; ?>"><?php echo htmlspecialchars($s['lastname'] . ', ' . $s['firstname']); ?></option>
-                                <?php endforeach; ?>
+                            <select name="student_id" id="modal_student" class="form-select" required disabled>
+                                <option value="">Select a course first...</option>
                             </select>
-                            <div class="form-text">Choose the student to enroll</div>
+                            <div class="form-text">Students enrolled in the selected course</div>
                         </div>
+                        
+                        <!-- Step 3: Subject (filtered by course) -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Subject <span class="text-danger">*</span></label>
-                            <select name="subject_id" class="form-select" required>
-                                <option value="">Select a subject...</option>
-                                <?php foreach ($subjects as $s): ?>
-                                    <option value="<?php echo $s['CurriculumID']; ?>">
-                                        [<?php echo $s['courseID']; ?>] <?php echo htmlspecialchars($s['subject_code'] . ' - ' . $s['description']); ?>
-                                    </option>
-                                <?php endforeach; ?>
+                            <select name="subject_id" id="modal_subject" class="form-select" required disabled>
+                                <option value="">Select a course first...</option>
                             </select>
-                            <div class="form-text">Choose the subject to enroll in</div>
+                            <div class="form-text">Subjects under the selected course</div>
                         </div>
                     </div>
                 </div>
@@ -233,13 +275,6 @@ $courses = $pdo->query("SELECT * FROM course ORDER BY courseID ASC")->fetchAll()
 </div>
 
 <style>
-    .badge-course {
-        background-color: rgba(56, 178, 172, 0.1);
-        color: #319795;
-        font-weight: 500;
-        padding: 0.35em 0.65em;
-        border-radius: var(--border-radius-sm);
-    }
     .badge-subject {
         background-color: rgba(66, 153, 225, 0.1);
         color: #3182ce;
@@ -270,6 +305,92 @@ $courses = $pdo->query("SELECT * FROM course ORDER BY courseID ASC")->fetchAll()
             dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip'
         });
         <?php endif; ?>
+
+        // === DATA FOR DYNAMIC FILTERING ===
+        // All students with their course mapping
+        var allStudents = [
+            <?php foreach ($students as $s): ?>
+                { id: <?php echo $s['id']; ?>, name: <?php echo json_encode($s['lastname'] . ', ' . $s['firstname']); ?>, courseID: <?php echo json_encode($studentCourses[$s['id']] ?? ''); ?>, courseName: <?php echo json_encode($studentCourseNames[$s['id']] ?? ''); ?> },
+            <?php endforeach; ?>
+        ];
+
+        // All subjects with course info
+        var allSubjects = [
+            <?php foreach ($subjects as $s): ?>
+                { id: <?php echo $s['CurriculumID']; ?>, courseID: <?php echo json_encode($s['courseID']); ?>, label: <?php echo json_encode($s['course_code'] . ' | ' . $s['subject_code'] . ' - ' . $s['description']); ?> },
+            <?php endforeach; ?>
+        ];
+
+        // === COURSE CHANGE → FILTER STUDENT + SUBJECT ===
+        $('#modal_course').on('change', function() {
+            var selectedCourse = $(this).val();
+            var $studentSelect = $('#modal_student');
+            var $subjectSelect = $('#modal_subject');
+
+            // Reset both
+            $studentSelect.html('<option value="">Select a student...</option>');
+            $subjectSelect.html('<option value="">Select a subject...</option>');
+
+            if (!selectedCourse) {
+                $studentSelect.prop('disabled', true);
+                $subjectSelect.prop('disabled', true);
+                return;
+            }
+
+            // Enrolled students in this course + unenrolled students (available to all)
+            var enrolledInCourse = allStudents.filter(function(s) { return s.courseID === selectedCourse; });
+            var unenrolled = allStudents.filter(function(s) { return s.courseID === ''; });
+
+            var studentHtml = '<option value="">Select a student...</option>';
+
+            // Show enrolled students first with their course tag
+            if (enrolledInCourse.length > 0) {
+                studentHtml += '<optgroup label="Enrolled in this course">';
+                enrolledInCourse.forEach(function(s) {
+                    studentHtml += '<option value="' + s.id + '">' + s.name + ' (' + s.courseName + ')</option>';
+                });
+                studentHtml += '</optgroup>';
+            }
+
+            // Show unenrolled students with indicator
+            if (unenrolled.length > 0) {
+                studentHtml += '<optgroup label="Not yet enrolled">';
+                unenrolled.forEach(function(s) {
+                    studentHtml += '<option value="' + s.id + '">' + s.name + ' — Not Enrolled</option>';
+                });
+                studentHtml += '</optgroup>';
+            }
+
+            if (enrolledInCourse.length === 0 && unenrolled.length === 0) {
+                $studentSelect.html('<option value="">No students available</option>');
+            } else {
+                $studentSelect.html(studentHtml);
+            }
+            $studentSelect.prop('disabled', false);
+
+            // Filter subjects by course
+            var filteredSubjects = allSubjects.filter(function(s) {
+                return s.courseID === selectedCourse;
+            });
+
+            if (filteredSubjects.length === 0) {
+                $subjectSelect.html('<option value="">No subjects found for this course</option>');
+            } else {
+                var subjectHtml = '<option value="">Select a subject...</option>';
+                filteredSubjects.forEach(function(s) {
+                    subjectHtml += '<option value="' + s.id + '">' + s.label + '</option>';
+                });
+                $subjectSelect.html(subjectHtml);
+            }
+            $subjectSelect.prop('disabled', false);
+        });
+
+        // Reset Add modal form when opened
+        $('#addModal').on('show.bs.modal', function() {
+            $(this).find('form')[0].reset();
+            $('#modal_student').html('<option value="">Select a course first...</option>').prop('disabled', true);
+            $('#modal_subject').html('<option value="">Select a course first...</option>').prop('disabled', true);
+        });
 
         // Delete confirmation with calm styling
         $(document).on('click', '.delete-btn', function() {

@@ -206,6 +206,11 @@ $students = $pdo->query("SELECT * FROM students ORDER BY lastname ASC")->fetchAl
             }
         });
 
+        // Reset Add modal form when opened
+        $('#addStudentModal').on('show.bs.modal', function() {
+            $(this).find('form')[0].reset();
+        });
+
         // Edit button
         $(document).on('click', '.edit-btn', function() {
             $('#edit_id').val($(this).data('id'));

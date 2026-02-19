@@ -143,7 +143,7 @@ try {
                             <td style="padding-left: 24px;">
                                 <span class="font-monospace text-muted" style="font-size: 0.8rem;"><?php echo str_pad($s['CurriculumID'], 4, '0', STR_PAD_LEFT); ?></span>
                             </td>
-                            <td><span class="badge bg-info"><?php echo htmlspecialchars($s['course_code'] ?? 'N/A'); ?></span></td>
+                            <td><span class="badge badge-course"><?php echo htmlspecialchars($s['course_code'] ?? 'N/A'); ?></span></td>
                             <td style="font-weight: 600; color: var(--text-primary, #1a202c);"><?php echo htmlspecialchars($s['subject_code']); ?></td>
                             <td><?php echo htmlspecialchars($s['description']); ?></td>
                             <td class="text-center"><?php echo $s['year_level']; ?></td>
@@ -322,6 +322,11 @@ try {
                 "searchPlaceholder": "Search subjects...",
                 "lengthMenu": "Show _MENU_ entries"
             }
+        });
+
+        // Reset Add modal form when opened
+        $('#addSubjectModal').on('show.bs.modal', function() {
+            $(this).find('form')[0].reset();
         });
 
         $(document).on('click', '.edit-btn', function() {

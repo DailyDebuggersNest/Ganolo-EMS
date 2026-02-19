@@ -483,68 +483,112 @@ FROM enrollments e;
 
 
 -- ============================================
--- STEP 6: ADD PAYMENTS (Realistic Breakdown)
+-- STEP 6: ADD PAYMENTS (Tuition & Miscellaneous Fee Structure)
+-- Main Remarks: "Tuition Fee" and "Miscellaneous Fee"
 -- ============================================
 
--- Student 1 Payments (Multiple per semester)
+-- Student 1 Payments (Installment payer - separates Tuition and Misc)
 INSERT INTO payments (student_id, year_level, semester, school_year, payment_date, remarks, cost, amount_paid) VALUES
-(1, 1, '1st', '2022-2023', '2022-08-10', 'Enrollment Downpayment', 5000, 5000),
-(1, 1, '1st', '2022-2023', '2022-09-15', 'Miscellaneous Fees', 3500, 3500),
-(1, 1, '1st', '2022-2023', '2022-11-15', 'Tuition Balance', 8000, 8000),
-(1, 1, '2nd', '2022-2023', '2023-01-10', 'Full Payment', 16000, 16000),
-(1, 2, '1st', '2023-2024', '2023-08-10', 'Enrollment Fee', 5000, 5000),
-(1, 2, '1st', '2023-2024', '2023-10-15', 'Tuition Installment', 6000, 6000),
-(1, 2, '1st', '2023-2024', '2023-12-01', 'Balance', 6000, 6000),
-(1, 2, '2nd', '2023-2024', '2024-01-10', 'Full Payment', 17000, 17000),
-(1, 3, '1st', '2024-2025', '2024-08-10', 'Downpayment', 5000, 5000),
-(1, 3, '1st', '2024-2025', '2024-10-10', 'Midterm Payment', 6000, 6000),
-(1, 3, '1st', '2024-2025', '2024-12-10', 'Final Payment', 6500, 6500),
-(1, 3, '2nd', '2024-2025', '2025-01-10', 'Full Payment (Discounted)', 17000, 17000),
-(1, 4, '1st', '2025-2026', '2025-08-10', 'Enrollment Fee', 5000, 5000),
-(1, 4, '1st', '2025-2026', '2025-09-15', 'Capstone Fee', 2500, 2500),
-(1, 4, '1st', '2025-2026', '2025-10-15', 'Tuition Balance', 10000, 0);
+-- Y1 S1: Paid Misc first, then Tuition in parts
+(1, 1, '1st', '2022-2023', '2022-08-10', 'Miscellaneous Fee', 3500, 3500),
+(1, 1, '1st', '2022-2023', '2022-08-10', 'Tuition Fee - Downpayment', 12500, 5000),
+(1, 1, '1st', '2022-2023', '2022-10-15', 'Tuition Fee - 2nd Installment', 7500, 4000),
+(1, 1, '1st', '2022-2023', '2022-12-05', 'Tuition Fee - Final Balance', 3500, 3500),
+-- Y1 S2: Full payment both
+(1, 1, '2nd', '2022-2023', '2023-01-10', 'Tuition Fee', 12500, 12500),
+(1, 1, '2nd', '2022-2023', '2023-01-10', 'Miscellaneous Fee', 3500, 3500),
+-- Y2 S1: Staggered payments
+(1, 2, '1st', '2023-2024', '2023-08-12', 'Miscellaneous Fee', 4000, 4000),
+(1, 2, '1st', '2023-2024', '2023-08-12', 'Tuition Fee - Downpayment', 13000, 5000),
+(1, 2, '1st', '2023-2024', '2023-10-20', 'Tuition Fee - 2nd Installment', 8000, 4500),
+(1, 2, '1st', '2023-2024', '2023-12-10', 'Tuition Fee - Final Balance', 3500, 3500),
+-- Y2 S2: Full payment
+(1, 2, '2nd', '2023-2024', '2024-01-08', 'Tuition Fee', 13000, 13000),
+(1, 2, '2nd', '2023-2024', '2024-01-08', 'Miscellaneous Fee', 4000, 4000),
+-- Y3 S1: Staggered
+(1, 3, '1st', '2024-2025', '2024-08-10', 'Miscellaneous Fee', 4500, 4500),
+(1, 3, '1st', '2024-2025', '2024-08-10', 'Tuition Fee - Downpayment', 13500, 5000),
+(1, 3, '1st', '2024-2025', '2024-10-15', 'Tuition Fee - 2nd Installment', 8500, 5000),
+(1, 3, '1st', '2024-2025', '2024-12-12', 'Tuition Fee - Final Balance', 3500, 3500),
+-- Y3 S2: Full payment
+(1, 3, '2nd', '2024-2025', '2025-01-10', 'Tuition Fee', 13500, 13500),
+(1, 3, '2nd', '2024-2025', '2025-01-10', 'Miscellaneous Fee', 4500, 4500),
+-- Y4 S1: Current semester - partial (still owing tuition balance)
+(1, 4, '1st', '2025-2026', '2025-08-10', 'Miscellaneous Fee', 5000, 5000),
+(1, 4, '1st', '2025-2026', '2025-08-10', 'Tuition Fee - Downpayment', 14000, 5000),
+(1, 4, '1st', '2025-2026', '2025-10-18', 'Tuition Fee - 2nd Installment', 9000, 4000);
 
--- Student 2 Payments
+-- Student 2 Payments (Full payer - pays both Tuition & Misc together)
 INSERT INTO payments (student_id, year_level, semester, school_year, payment_date, remarks, cost, amount_paid) VALUES
-(2, 1, '1st', '2022-2023', '2022-08-15', 'Full Payment', 16500, 16500),
-(2, 1, '2nd', '2022-2023', '2023-01-15', 'Full Payment', 16500, 16500),
-(2, 2, '1st', '2023-2024', '2023-08-15', 'Full Payment', 17500, 17500),
-(2, 2, '2nd', '2023-2024', '2024-01-15', 'Full Payment', 17500, 17500),
-(2, 3, '1st', '2024-2025', '2024-08-15', 'Full Payment', 18500, 18500),
-(2, 3, '2nd', '2024-2025', '2025-01-15', 'Full Payment', 18500, 18500),
-(2, 4, '1st', '2025-2026', '2025-08-15', 'Downpayment', 5000, 5000),
-(2, 4, '1st', '2025-2026', '2025-10-01', 'Balance (Pending)', 14000, 7000);
+(2, 1, '1st', '2022-2023', '2022-08-15', 'Tuition Fee', 13000, 13000),
+(2, 1, '1st', '2022-2023', '2022-08-15', 'Miscellaneous Fee', 3500, 3500),
+(2, 1, '2nd', '2022-2023', '2023-01-12', 'Tuition Fee', 13000, 13000),
+(2, 1, '2nd', '2022-2023', '2023-01-12', 'Miscellaneous Fee', 3500, 3500),
+(2, 2, '1st', '2023-2024', '2023-08-14', 'Tuition Fee', 14000, 14000),
+(2, 2, '1st', '2023-2024', '2023-08-14', 'Miscellaneous Fee', 3500, 3500),
+(2, 2, '2nd', '2023-2024', '2024-01-10', 'Tuition Fee', 14000, 14000),
+(2, 2, '2nd', '2023-2024', '2024-01-10', 'Miscellaneous Fee', 3500, 3500),
+(2, 3, '1st', '2024-2025', '2024-08-12', 'Tuition Fee', 15000, 15000),
+(2, 3, '1st', '2024-2025', '2024-08-12', 'Miscellaneous Fee', 3500, 3500),
+(2, 3, '2nd', '2024-2025', '2025-01-13', 'Tuition Fee', 15000, 15000),
+(2, 3, '2nd', '2024-2025', '2025-01-13', 'Miscellaneous Fee', 3500, 3500),
+-- Y4 S1: Paid misc full, tuition partial
+(2, 4, '1st', '2025-2026', '2025-08-15', 'Miscellaneous Fee', 4000, 4000),
+(2, 4, '1st', '2025-2026', '2025-08-15', 'Tuition Fee - Downpayment', 15000, 8000),
+(2, 4, '1st', '2025-2026', '2025-10-25', 'Tuition Fee - Balance', 7000, 7000);
 
--- Student 3 Payments
+-- Student 3 Payments (Full payer each semester)
 INSERT INTO payments (student_id, year_level, semester, school_year, payment_date, remarks, cost, amount_paid) VALUES
-(3, 1, '1st', '2022-2023', '2022-08-15', 'Full Payment', 15000, 15000),
-(3, 1, '2nd', '2022-2023', '2023-01-15', 'Full Payment', 15000, 15000),
-(3, 2, '1st', '2023-2024', '2023-08-15', 'Full Payment', 16000, 16000),
-(3, 2, '2nd', '2023-2024', '2024-01-15', 'Full Payment', 16000, 16000),
-(3, 3, '1st', '2024-2025', '2024-08-15', 'Full Payment', 17000, 17000),
-(3, 3, '2nd', '2024-2025', '2025-01-15', 'Full Payment', 17000, 17000),
-(3, 4, '1st', '2025-2026', '2025-08-15', 'Full Payment', 18000, 18000);
+(3, 1, '1st', '2022-2023', '2022-08-18', 'Tuition Fee', 11500, 11500),
+(3, 1, '1st', '2022-2023', '2022-08-18', 'Miscellaneous Fee', 3500, 3500),
+(3, 1, '2nd', '2022-2023', '2023-01-16', 'Tuition Fee', 11500, 11500),
+(3, 1, '2nd', '2022-2023', '2023-01-16', 'Miscellaneous Fee', 3500, 3500),
+(3, 2, '1st', '2023-2024', '2023-08-17', 'Tuition Fee', 12500, 12500),
+(3, 2, '1st', '2023-2024', '2023-08-17', 'Miscellaneous Fee', 3500, 3500),
+(3, 2, '2nd', '2023-2024', '2024-01-15', 'Tuition Fee', 12500, 12500),
+(3, 2, '2nd', '2023-2024', '2024-01-15', 'Miscellaneous Fee', 3500, 3500),
+(3, 3, '1st', '2024-2025', '2024-08-16', 'Tuition Fee', 13500, 13500),
+(3, 3, '1st', '2024-2025', '2024-08-16', 'Miscellaneous Fee', 3500, 3500),
+(3, 3, '2nd', '2024-2025', '2025-01-14', 'Tuition Fee', 13500, 13500),
+(3, 3, '2nd', '2024-2025', '2025-01-14', 'Miscellaneous Fee', 3500, 3500),
+(3, 4, '1st', '2025-2026', '2025-08-18', 'Tuition Fee', 14500, 14500),
+(3, 4, '1st', '2025-2026', '2025-08-18', 'Miscellaneous Fee', 3500, 3500);
 
--- Student 4 Payments
+-- Student 4 Payments (Pays Misc first, then Tuition later same week)
 INSERT INTO payments (student_id, year_level, semester, school_year, payment_date, remarks, cost, amount_paid) VALUES
-(4, 1, '1st', '2022-2023', '2022-08-15', 'Full Payment', 16000, 16000),
-(4, 1, '2nd', '2022-2023', '2023-01-15', 'Full Payment', 16000, 16000),
-(4, 2, '1st', '2023-2024', '2023-08-15', 'Full Payment', 17000, 17000),
-(4, 2, '2nd', '2023-2024', '2024-01-15', 'Full Payment', 17000, 17000),
-(4, 3, '1st', '2024-2025', '2024-08-15', 'Full Payment', 18000, 18000),
-(4, 3, '2nd', '2024-2025', '2025-01-15', 'Full Payment', 18000, 18000),
-(4, 4, '1st', '2025-2026', '2025-08-15', 'Downpayment', 5000, 5000),
-(4, 4, '1st', '2025-2026', '2025-09-15', 'Tuition (Partial)', 14000, 4000);
+(4, 1, '1st', '2022-2023', '2022-08-10', 'Miscellaneous Fee', 3500, 3500),
+(4, 1, '1st', '2022-2023', '2022-08-12', 'Tuition Fee', 12500, 12500),
+(4, 1, '2nd', '2022-2023', '2023-01-09', 'Miscellaneous Fee', 3500, 3500),
+(4, 1, '2nd', '2022-2023', '2023-01-11', 'Tuition Fee', 12500, 12500),
+(4, 2, '1st', '2023-2024', '2023-08-11', 'Miscellaneous Fee', 3500, 3500),
+(4, 2, '1st', '2023-2024', '2023-08-14', 'Tuition Fee', 13500, 13500),
+(4, 2, '2nd', '2023-2024', '2024-01-08', 'Miscellaneous Fee', 3500, 3500),
+(4, 2, '2nd', '2023-2024', '2024-01-10', 'Tuition Fee', 13500, 13500),
+(4, 3, '1st', '2024-2025', '2024-08-09', 'Miscellaneous Fee', 4000, 4000),
+(4, 3, '1st', '2024-2025', '2024-08-12', 'Tuition Fee', 14000, 14000),
+(4, 3, '2nd', '2024-2025', '2025-01-10', 'Miscellaneous Fee', 4000, 4000),
+(4, 3, '2nd', '2024-2025', '2025-01-13', 'Tuition Fee', 14000, 14000),
+-- Y4 S1: Still has tuition balance
+(4, 4, '1st', '2025-2026', '2025-08-11', 'Miscellaneous Fee', 4500, 4500),
+(4, 4, '1st', '2025-2026', '2025-08-14', 'Tuition Fee - Downpayment', 14500, 10000),
+(4, 4, '1st', '2025-2026', '2025-11-05', 'Tuition Fee - Balance', 4500, 4500);
 
--- Student 5 Payments
+-- Student 5 Payments (Consistent full payer)
 INSERT INTO payments (student_id, year_level, semester, school_year, payment_date, remarks, cost, amount_paid) VALUES
-(5, 1, '1st', '2022-2023', '2022-08-15', 'Full Payment', 14500, 14500),
-(5, 1, '2nd', '2022-2023', '2023-01-15', 'Full Payment', 14500, 14500),
-(5, 2, '1st', '2023-2024', '2023-08-15', 'Full Payment', 15500, 15500),
-(5, 2, '2nd', '2023-2024', '2024-01-15', 'Full Payment', 15500, 15500),
-(5, 3, '1st', '2024-2025', '2024-08-15', 'Full Payment', 16500, 16500),
-(5, 3, '2nd', '2024-2025', '2025-01-15', 'Full Payment', 16500, 16500),
-(5, 4, '1st', '2025-2026', '2025-08-15', 'Full Payment', 17500, 17500);
+(5, 1, '1st', '2022-2023', '2022-08-20', 'Tuition Fee', 11000, 11000),
+(5, 1, '1st', '2022-2023', '2022-08-20', 'Miscellaneous Fee', 3500, 3500),
+(5, 1, '2nd', '2022-2023', '2023-01-18', 'Tuition Fee', 11000, 11000),
+(5, 1, '2nd', '2022-2023', '2023-01-18', 'Miscellaneous Fee', 3500, 3500),
+(5, 2, '1st', '2023-2024', '2023-08-21', 'Tuition Fee', 12000, 12000),
+(5, 2, '1st', '2023-2024', '2023-08-21', 'Miscellaneous Fee', 3500, 3500),
+(5, 2, '2nd', '2023-2024', '2024-01-19', 'Tuition Fee', 12000, 12000),
+(5, 2, '2nd', '2023-2024', '2024-01-19', 'Miscellaneous Fee', 3500, 3500),
+(5, 3, '1st', '2024-2025', '2024-08-19', 'Tuition Fee', 13000, 13000),
+(5, 3, '1st', '2024-2025', '2024-08-19', 'Miscellaneous Fee', 3500, 3500),
+(5, 3, '2nd', '2024-2025', '2025-01-17', 'Tuition Fee', 13000, 13000),
+(5, 3, '2nd', '2024-2025', '2025-01-17', 'Miscellaneous Fee', 3500, 3500),
+(5, 4, '1st', '2025-2026', '2025-08-18', 'Tuition Fee', 14000, 14000),
+(5, 4, '1st', '2025-2026', '2025-08-18', 'Miscellaneous Fee', 3500, 3500);
 
 
 -- ============================================

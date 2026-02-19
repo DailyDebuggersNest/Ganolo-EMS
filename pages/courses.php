@@ -6,8 +6,11 @@ $pageTitle = 'Courses';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['action']) && $_POST['action'] == 'add') {
         try {
-            $stmt = $pdo->prepare("INSERT INTO course (course_code, description) VALUES (?, ?)");
-            $stmt->execute([strtoupper($_POST['course_code']), $_POST['description']]);
+            // Auto-generate next courseID (e.g., '0006', '0007', etc.)
+            $maxID = $pdo->query("SELECT COALESCE(MAX(CAST(courseID AS UNSIGNED)), 0) + 1 FROM course")->fetchColumn();
+            $newCourseID = str_pad($maxID, 4, '0', STR_PAD_LEFT);
+            $stmt = $pdo->prepare("INSERT INTO course (courseID, course_code, description) VALUES (?, ?, ?)");
+            $stmt->execute([$newCourseID, strtoupper($_POST['course_code']), $_POST['description']]);
             $successMsg = "Course added successfully!";
         } catch (PDOException $e) { $errorMsg = "Error: " . $e->getMessage(); }
     }
@@ -212,6 +215,11 @@ $uniqueCodes = $pdo->query("SELECT DISTINCT course_code FROM course ORDER BY cou
                 "searchPlaceholder": "Search courses...",
                 "lengthMenu": "Show _MENU_"
             }
+        });
+
+        // Reset Add modal form when opened
+        $('#addCourseModal').on('show.bs.modal', function() {
+            $(this).find('form')[0].reset();
         });
 
         // Edit button
